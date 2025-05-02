@@ -1,11 +1,17 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';  // para gerar token UUID
+
 import '../components/custom_input.dart';
 import '../components/custom_button.dart';
+import '../screens/beneficiary_edit_screen.dart';  // tela de edição
+import '../screens/beneficiary_detail_screen.dart'; // tela de detalhes
+import '../screens/report_edit_screen.dart';      // tela de edição/criação de pagamentos
 import '../services/api_service.dart';
+import '../services/session_manager.dart';  // para gerenciar token de beneficiário
 import '../models/beneficiary.dart';
 import '../models/report.dart';
 import '../utils/date_helper.dart';
-import 'dart:convert';  // <-- Adicione esta linha
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({Key? key}) : super(key: key);
@@ -18,34 +24,39 @@ class _AdminScreenState extends State<AdminScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final _api = ApiService();
+  final _sm  = SessionManager();
 
-  // estados
   List<Beneficiary> _bens = [];
   List<Report>      _reps = [];
-  bool _loadingBens = false, _loadingReps = false;
+  bool _loadingBens = false;
+  bool _loadingReps = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _fetchBeneficiaries();
-    _fetchReports();
+    _loadBeneficiaries();
+    _loadReports();
   }
 
-  Future<void> _fetchBeneficiaries() async {
+  Future<void> _loadBeneficiaries() async {
     setState(() => _loadingBens = true);
     final res = await _api.get('beneficiaries');
-    final list = (res.body.isNotEmpty ? List<Map<String, dynamic>>.from(json.decode(res.body)) : []);
+    final list = res.body.isNotEmpty
+        ? List<Map<String, dynamic>>.from(json.decode(res.body))
+        : <Map<String, dynamic>>[];
     setState(() {
       _bens = list.map((m) => Beneficiary.fromMap(m)).toList();
       _loadingBens = false;
     });
   }
 
-  Future<void> _fetchReports() async {
+  Future<void> _loadReports() async {
     setState(() => _loadingReps = true);
     final res = await _api.get('reports');
-    final list = (res.body.isNotEmpty ? List<Map<String, dynamic>>.from(json.decode(res.body)) : []);
+    final list = res.body.isNotEmpty
+        ? List<Map<String, dynamic>>.from(json.decode(res.body))
+        : <Map<String, dynamic>>[];
     setState(() {
       _reps = list.map((m) => Report.fromMap(m)).toList();
       _loadingReps = false;
@@ -54,46 +65,54 @@ class _AdminScreenState extends State<AdminScreen>
 
   Future<void> _deleteBeneficiary(String name) async {
     await _api.delete('beneficiaries/$name');
-    _fetchBeneficiaries();
+    _loadBeneficiaries();
   }
 
-  void _openEditDialog(Beneficiary ben) {
-    final nameCtrl   = TextEditingController(text: ben.name);
-    final areaCtrl   = TextEditingController(text: ben.areaPreserved.toString());
-    final servCtrl   = TextEditingController(text: ben.serviceDescription);
+  Future<void> _deleteReport(String id) async {
+    await _api.delete('reports/$id');
+    _loadReports();
+  }
 
-    showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Editar Beneficiário'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CustomInput(label: 'Nome', controller: nameCtrl),
-            const SizedBox(height: 8),
-            CustomInput(label: 'Área (m²)', controller: areaCtrl, keyboardType: TextInputType.number),
-            const SizedBox(height: 8),
-            CustomInput(label: 'Serviço', controller: servCtrl),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-          CustomButton(
-            label: 'Salvar',
-            onPressed: () async {
-              final updated = Beneficiary(
-                name: nameCtrl.text.trim(),
-                areaPreserved: double.tryParse(areaCtrl.text) ?? ben.areaPreserved,
-                serviceDescription: servCtrl.text.trim(),
-              );
-              await _api.put('beneficiaries/${ben.name}', updated.toMap());
-              Navigator.pop(context);
-              _fetchBeneficiaries();
-            },
-          ),
-        ],
-      ),
+  Future<void> _grantAccess() async {
+    final token = const Uuid().v4();
+    await _sm.saveBeneficiaryToken(token);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Acesso concedido! Token: \$token')),
     );
+  }
+
+  void _openEditBeneficiary(Beneficiary ben) {
+    Navigator.push<Beneficiary>(
+      context,
+      MaterialPageRoute(builder: (_) => BeneficiaryEditScreen(ben: ben)),
+    ).then((updated) {
+      if (updated != null) _loadBeneficiaries();
+    });
+  }
+
+  void _viewBeneficiaryDetails(Beneficiary ben) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => BeneficiaryDetailScreen(ben: ben)),
+    );
+  }
+
+  void _openCreateReport() {
+    Navigator.push<Report>(
+      context,
+      MaterialPageRoute(builder: (_) => ReportEditScreen()),
+    ).then((saved) {
+      if (saved != null) _loadReports();
+    });
+  }
+
+  void _openEditReport(Report rep) {
+    Navigator.push<Report>(
+      context,
+      MaterialPageRoute(builder: (_) => ReportEditScreen(report: rep)),
+    ).then((updated) {
+      if (updated != null) _loadReports();
+    });
   }
 
   @override
@@ -118,7 +137,7 @@ class _AdminScreenState extends State<AdminScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          // === TAB 1: Beneficiários ===
+          // === ABA BENEFICIÁRIOS ===
           _loadingBens
               ? const Center(child: CircularProgressIndicator())
               : ListView.builder(
@@ -129,17 +148,31 @@ class _AdminScreenState extends State<AdminScreen>
                 margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                 child: ListTile(
                   title: Text(ben.name),
-                  subtitle: Text('Área: ${ben.areaPreserved}m²\n${ben.serviceDescription}'),
+                  subtitle: Text(
+                    'Área: \${ben.areaPreserved}m²\n\${ben.serviceDescription}',
+                  ),
                   isThreeLine: true,
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
+                        icon: const Icon(Icons.info, color: Colors.blue),
+                        tooltip: 'Detalhes',
+                        onPressed: () => _viewBeneficiaryDetails(ben),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.vpn_key, color: Colors.blue),
+                        tooltip: 'Conceder Acesso',
+                        onPressed: _grantAccess,
+                      ),
+                      IconButton(
                         icon: const Icon(Icons.edit, color: Colors.green),
-                        onPressed: () => _openEditDialog(ben),
+                        tooltip: 'Editar',
+                        onPressed: () => _openEditBeneficiary(ben),
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
+                        tooltip: 'Deletar',
                         onPressed: () => _deleteBeneficiary(ben.name),
                       ),
                     ],
@@ -149,20 +182,52 @@ class _AdminScreenState extends State<AdminScreen>
             },
           ),
 
-          // === TAB 2: Pagamentos / relatórios ===
-          _loadingReps
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-            itemCount: _reps.length,
-            itemBuilder: (_, i) {
-              final r = _reps[i];
-              return ListTile(
-                leading: const Icon(Icons.payment),
-                title: Text(r.title),
-                subtitle: Text('${DateHelper.formatDate(r.date)}\nURL: ${r.url}'),
-                onTap: () => {/* abrir link ou detalhes */},
-              );
-            },
+          // === ABA PAGAMENTOS ===
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('Novo Pagamento'),
+                    onPressed: _openCreateReport,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: _loadingReps
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                  itemCount: _reps.length,
+                  itemBuilder: (_, i) {
+                    final r = _reps[i];
+                    return ListTile(
+                      leading: const Icon(Icons.payment),
+                      title: Text(r.title),
+                      subtitle: Text(
+                        '\${DateHelper.formatDate(r.date)}\n\${r.url}',
+                      ),
+                      isThreeLine: true,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.green),
+                            onPressed: () => _openEditReport(r),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deleteReport(r.id),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -1,12 +1,17 @@
+// lib/services/session_manager.dart
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SessionManager {
-  static const _tokenKey = 'auth_token';
-  static const _roleKey = 'user_role'; // Novo campo para armazenar o papel do usuário
-  static const _nickKey = 'user_nickname';
-  static const _emailKey = 'user_email';
-  static const _phoneKey = 'user_phone';
-  static const _avatarKey = 'user_avatar_path';
+  static const _tokenKey             = 'auth_token';
+  static const _roleKey              = 'user_role';
+  static const _nickKey              = 'user_nickname';
+  static const _emailKey             = 'user_email';
+  static const _phoneKey             = 'user_phone';
+  static const _avatarKey            = 'user_avatar_path';
+
+  // NOVO: chave para o token de beneficiário
+  static const _beneficiaryTokenKey  = 'beneficiary_token';
 
   /// Salva o JWT
   Future<void> saveToken(String token) async {
@@ -80,14 +85,37 @@ class SessionManager {
     return prefs.getString(_avatarKey);
   }
 
-  /// Limpa todas as informações de sessão
+  // ============================
+  // Métodos para Beneficiário
+  // ============================
+
+  /// Salva o token de beneficiário (concede acesso permanente)
+  Future<void> saveBeneficiaryToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_beneficiaryTokenKey, token);
+  }
+
+  /// Recupera o token de beneficiário (ou null se não existir)
+  Future<String?> getBeneficiaryToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_beneficiaryTokenKey);
+  }
+
+  /// Limpa (revoga) o token de beneficiário
+  Future<void> clearBeneficiaryToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_beneficiaryTokenKey);
+  }
+
+  /// Limpa todas as informações de sessão, incluindo o token de beneficiário
   Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
-    await prefs.remove(_roleKey); // Limpa também o papel
+    await prefs.remove(_roleKey);
     await prefs.remove(_nickKey);
     await prefs.remove(_emailKey);
     await prefs.remove(_phoneKey);
     await prefs.remove(_avatarKey);
+    await prefs.remove(_beneficiaryTokenKey);
   }
 }

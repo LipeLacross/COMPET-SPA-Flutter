@@ -4,13 +4,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+
 import '../components/custom_input.dart';
 import '../components/custom_button.dart';
 import '../components/whatsapp_button.dart';
+
 import '../services/geolocation_service.dart';
 import '../services/local_storage_service.dart';
 import '../services/report_service.dart';
 import '../services/notification_service.dart';
+import '../services/session_manager.dart'; // import para controle de token
+
 import '../models/offline_record.dart';
 import '../models/report.dart';
 import '../utils/date_helper.dart';
@@ -24,9 +28,10 @@ class BeneficiaryScreen extends StatefulWidget {
 
 class _BeneficiaryScreenState extends State<BeneficiaryScreen>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  final SessionManager _sm = SessionManager();
+  late final TabController _tabController;
 
-  // Área Coberta controllers
+  // Controllers para Área Coberta
   final _areaTotalController       = TextEditingController();
   final _areaAppController         = TextEditingController();
   final _descriptionAreaController = TextEditingController();
@@ -36,14 +41,14 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
   final _humanResourcesController  = TextEditingController();
   final _otherResourcesController  = TextEditingController();
 
-  // Atividades controller
+  // Controller para Atividades
   final _descController = TextEditingController();
 
-  // Services
-  final _geoService      = GeolocationService();
-  final _storageService  = LocalStorageService();
-  final _reportService   = ReportService();
-  final _notifService    = NotificationService();
+  // Serviços
+  final _geoService     = GeolocationService();
+  final _storageService = LocalStorageService();
+  final _reportService  = ReportService();
+  final _notifService   = NotificationService();
 
   File?     _pickedImage;
   Position? _currentPos;
@@ -53,10 +58,37 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
   @override
   void initState() {
     super.initState();
+    _checkAccess(); // valida token antes de inicializar UI
     _tabController = TabController(length: 3, vsync: this);
     _loadRecords();
     _loadPayments();
     _notifService.init();
+  }
+
+  Future<void> _checkAccess() async {
+    final token = await _sm.getBeneficiaryToken();
+    if (token == null) {
+      // se não autorizado, exibe alerta e redireciona
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => AlertDialog(
+            title: const Text('Acesso Negado'),
+            content: const Text(
+              'Você não tem autorização para acessar esta área.\n'
+                  'Solicite permissão na tela de Administração.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      });
+    }
   }
 
   Future<void> _loadRecords() async {
@@ -94,7 +126,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
   }
 
   Future<void> _showEditAreaDialog(OfflineRecord record) async {
-    // pré-preenche campos
+    // preenche campos existentes
     _areaTotalController.text       = record.payload['areaTotal'].toString();
     _areaAppController.text         = record.payload['areaApp'].toString();
     _descriptionAreaController.text = record.payload['description'];
@@ -178,13 +210,12 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
           title: const Text('Atenção'),
           content: const Text('Descrição é obrigatória!'),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
           ],
         ),
       );
       return;
     }
-
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.camera);
     if (picked == null) return;
@@ -213,9 +244,8 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
   int get _weeklyActivitiesCount {
     final weekAgo = DateTime.now().subtract(const Duration(days: 7));
     return _records
-        .where((r) =>
-    r.payload['type'] == 'activity' &&
-        DateTime.parse(r.payload['date']).isAfter(weekAgo))
+        .where((r) => r.payload['type'] == 'activity'
+        && DateTime.parse(r.payload['date']).isAfter(weekAgo))
         .length;
   }
 
@@ -236,8 +266,6 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Área do Beneficiário'),
