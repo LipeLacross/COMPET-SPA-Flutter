@@ -1,0 +1,152 @@
+Escopo do Projeto – Sistema de Pagamento por Serviços Ambientais (PSA) em Flutter
+
+Objetivo
+Desenvolver uma solução digital em Flutter para gerenciar o PSA, permitindo à SEMAS–PE remunerar beneficiários pela preservação ambiental. Haverá dois módulos:
+
+Sistema Web – painel de administração e relatórios para a SEMAS(Dashboard no flutter).
+
+App Móvel – uso exclusivo dos beneficiários, de forma simples e intuitiva.
+
+1. Funcionalidades do Sistema
+1.1. Sistema Web (Administração e Visualização)
+Será acessado pelos analistas da SEMAS para gerenciar dados, gerar relatórios e acompanhar indicadores dos beneficiarios.
+
+Cadastro e Gerenciamento de Beneficiários
+
+Nome
+
+Extensão da área preservada
+
+Valor do benefício
+
+Recursos humanos associados
+
+Descrição do serviço prestado
+
+Dashboard de Análise de Dados
+
+Visão geral do progresso de cada beneficiário
+
+Indicadores de performance do PSA
+
+Visualização Geográfica (mapa cartografico talvez da area)[meu prof fala muito de georeferenciamento co mgeopandas]
+
+Mapas interativos com marcadores de atividades dos beneficarios no estado para poder selecionar
+
+Filtros por região, data e tipo de atividade
+
+Relatórios Personalizados
+
+Exportação PDF/CSV de monitoramento e pagamentos
+
+Filtros por período, beneficiário e valor
+
+1.2. Sistema de Beneficiários
+Voltado a agricultores familiares, quilombolas e povos indígenas, com interface simplificada.
+
+Tela de perfil e histórico de pagamentos
+
+Cadastro de Área
+
+Área total da propriedade
+
+Área de Preservação Permanente (APP)
+
+Georreferenciamento inicial
+
+Registro de Atividades de Conservação com Foto da atividade com geolocalização automática
+
+
+Texto opcional para descrição breve
+
+Armazenamento offline e sincronização automática quando houver rede
+
+Status e Notificações
+
+Tela de “Meus Pagamentos” com datas e valores
+
+Push notifications informando liberação ou atraso de pagamento
+
+Suporte via WhatsApp
+
+Botão “Suporte pelo WhatsApp” que abre deep-link para o bot
+
+Exemplo de componente:
+
+dart
+Copiar
+Editar
+WhatsAppButton(
+  phone: '55DD9NNNNNNNN',
+  message: 'Olá, preciso de ajuda com o PSA.',
+)
+2. Requisitos Técnicos
+2.1. Requisitos Funcionais
+Web
+
+Responsiva (desktop/tablet/móvel)
+
+Integração com APIs de mapas (Google Maps ou OpenStreetMap)
+
+Geração dinâmica de relatórios e dashboards interativos
+
+Mobile
+
+iOS e Android (mesma base em Flutter)
+
+Modo offline para registro de dados, com fila de envio
+
+Navegação simples e ícones claros para usuários sem familiaridade técnica
+
+2.2. Requisitos Não Funcionais
+Desempenho
+
+Web: alta disponibilidade, baixo tempo de resposta
+
+Mobile: app leve (< 50 MB), rápido e estável em hardware modesto
+
+Segurança
+
+Autenticação via JWT
+
+Criptografia TLS nas comunicações
+
+Armazenamento seguro de tokens e dados sensíveis
+
+Escalabilidade
+
+Arquitetura modular para futuras evoluções
+
+Backend preparado para aumento de número de beneficiários
+
+3. Estrutura de Tecnologias
+Flutter
+
+Flutter Web para o painel
+
+Flutter Mobile (iOS/Android) com base unificada
+
+Backend
+
+RESTful API em Node.js/Java/.NET
+
+Banco relacional (PostgreSQL ou MySQL)
+
+Geolocalização e Mapas
+
+Google Maps SDK ou MapLibre (open-source)
+
+Notificações
+
+Firebase Cloud Messaging (FCM)
+
+Dependências Flutter essenciais
+
+geolocator e google_maps_flutter
+
+http (ou dio) para chamadas API
+
+url_launcher para o botão WhatsApp
+
+sqflite ou hive para offline
+
