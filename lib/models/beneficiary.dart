@@ -1,3 +1,4 @@
+//beneficiary.dart
 class Beneficiary {
   final String name;
   final double areaPreserved;

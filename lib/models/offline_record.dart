@@ -1,3 +1,4 @@
+//offline_record.dart
 class OfflineRecord {
   final String id;
   final Map<String, dynamic> payload;
@@ -16,8 +17,8 @@ class OfflineRecord {
   };
 
   factory OfflineRecord.fromMap(Map<String, dynamic> m) => OfflineRecord(
-    id: m['id'],
-    payload: Map<String, dynamic>.from(m['payload']),
-    createdAt: DateTime.parse(m['createdAt']),
+    id: m['id'] as String,
+    payload: Map<String, dynamic>.from(m['payload'] as Map),
+    createdAt: DateTime.parse(m['createdAt'] as String),
   );
 }

@@ -1,3 +1,4 @@
+//report.dart
 class Report {
   final String id;
   final String title;
@@ -12,9 +13,10 @@ class Report {
   });
 
   factory Report.fromMap(Map<String, dynamic> m) => Report(
-    id: m['id'],
-    title: m['title'],
-    date: DateTime.parse(m['date']),
-    url: m['url'],
+    id: m['id'] as String,
+    title: m['title'] as String,
+    date: DateTime.parse(m['date'] as String),
+    url: m['url'] as String,
   );
 }
+

@@ -1,18 +1,36 @@
+// lib/components/custom_input.dart
+
 import 'package:flutter/material.dart';
 
 class CustomInput extends StatelessWidget {
   final String label;
   final TextEditingController controller;
+  final bool obscureText;
+  final Widget? suffixIcon;
+  final TextInputType keyboardType;
+  final String? hintText;
 
-  const CustomInput({super.key, required this.label, required this.controller});
+  const CustomInput({
+    Key? key,
+    required this.label,
+    required this.controller,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.keyboardType = TextInputType.text,
+    this.hintText,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        border: OutlineInputBorder(),
+        hintText: hintText,
+        border: const OutlineInputBorder(),
+        suffixIcon: suffixIcon,
       ),
     );
   }
