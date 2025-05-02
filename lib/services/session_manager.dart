@@ -1,5 +1,3 @@
-// lib/services/session_manager.dart
-
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SessionManager {
@@ -9,6 +7,8 @@ class SessionManager {
   static const _emailKey             = 'user_email';
   static const _phoneKey             = 'user_phone';
   static const _avatarKey            = 'user_avatar_path';
+  static const _fullNameKey          = 'user_full_name';  // Novo: para nome completo
+  static const _biographyKey         = 'user_biography';  // Novo: para biografia
 
   // NOVO: chave para o token de beneficiário
   static const _beneficiaryTokenKey  = 'beneficiary_token';
@@ -83,6 +83,34 @@ class SessionManager {
   Future<String?> getAvatarPath() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_avatarKey);
+  }
+
+  // ============================
+  // Métodos para Nome Completo e Biografia
+  // ============================
+
+  /// Salva o nome completo do usuário
+  Future<void> saveFullName(String fullName) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_fullNameKey, fullName);
+  }
+
+  /// Recupera o nome completo do usuário
+  Future<String?> getFullName() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_fullNameKey);
+  }
+
+  /// Salva a biografia do usuário
+  Future<void> saveBiography(String biography) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_biographyKey, biography);
+  }
+
+  /// Recupera a biografia do usuário
+  Future<String?> getBiography() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_biographyKey);
   }
 
   // ============================

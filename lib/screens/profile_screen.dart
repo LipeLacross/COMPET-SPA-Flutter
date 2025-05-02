@@ -14,11 +14,14 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final _nameController  = TextEditingController();
+  final _fullNameController = TextEditingController();  // Para o nome completo
+  final _nicknameController = TextEditingController();  // Para o apelido
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _sm              = SessionManager();
+  final _biographyController = TextEditingController();
+  final _sm = SessionManager();
   File? _avatar;
+  bool _isDarkMode = false;
 
   @override
   void initState() {
@@ -26,34 +29,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadProfile();
   }
 
+  // Carrega o perfil (nome completo, apelido, email, telefone)
   Future<void> _loadProfile() async {
+    final fullName = await _sm.getFullName();
     final nick = await _sm.getNickname();
+    final email = await _sm.getEmail();
+    final phone = await _sm.getPhone();
+    final bio = await _sm.getBiography(); // Para biografia
+
     setState(() {
-      _nameController.text = nick ?? '';
-      // caso salve e-mail/telefone em SessionManager, carregue aqui também
+      _fullNameController.text = fullName ?? '';
+      _nicknameController.text = nick ?? '';
+      _emailController.text = email ?? '';
+      _phoneController.text = phone ?? '';
+      _biographyController.text = bio ?? ''; // Carrega a biografia
     });
   }
 
+  // Função para escolher uma nova imagem de avatar
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
       setState(() => _avatar = File(picked.path));
-      // opcional: salvar caminho no SessionManager ou storage
+      // Opcional: salvar caminho no SessionManager ou storage
     }
+  }
+
+  // Função de salvar as alterações no perfil
+  Future<void> _saveProfile() async {
+    final newFullName = _fullNameController.text.trim();
+    final newNickname = _nicknameController.text.trim();
+    final newPhone = _phoneController.text.trim();
+    final newBio = _biographyController.text.trim();
+
+    // Atualizando os dados no SessionManager
+    await _sm.saveFullName(newFullName);
+    await _sm.saveNickname(newNickname);
+    await _sm.savePhone(newPhone);
+    await _sm.saveBiography(newBio);
+
+    // TODO: Se você tiver um backend, envie as alterações para o servidor
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Perfil atualizado com sucesso!')),
+    );
+  }
+
+  // Função para alterar o modo de exibição (Claro/Oscuro)
+  void _toggleTheme() {
+    setState(() {
+      _isDarkMode = !_isDarkMode;
+      // Aqui você pode salvar a preferência do usuário se necessário
+    });
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _fullNameController.dispose();
+    _nicknameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _biographyController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Perfil'),
@@ -76,17 +119,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            CustomInput(label: 'Nome', controller: _nameController),
+            CustomInput(
+              label: 'Nome Completo',  // Nome completo
+              controller: _fullNameController,
+            ),
             const SizedBox(height: 16),
-            CustomInput(label: 'E-mail', controller: _emailController),
+            CustomInput(
+              label: 'Apelido',  // Apelido
+              controller: _nicknameController,
+            ),
             const SizedBox(height: 16),
-            CustomInput(label: 'Telefone', controller: _phoneController),
+            CustomInput(
+              label: 'E-mail',  // E-mail (não editável)
+              controller: _emailController,
+              // Não use 'enabled' diretamente, adicione um parâmetro 'enabled' no CustomInput ou apenas faça o campo não-editável
+              readOnly: true,  // Modifique para 'readOnly' ou adicione 'enabled' no widget
+            ),
+            const SizedBox(height: 16),
+            CustomInput(
+              label: 'Telefone',  // Telefone
+              controller: _phoneController,
+            ),
+            const SizedBox(height: 16),
+            CustomInput(
+              label: 'Biografia',  // Biografia
+              controller: _biographyController,
+            ),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    _isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                    color: primary,
+                  ),
+                  onPressed: _toggleTheme,
+                ),
+                const Text('Modo de Exibição'),
+              ],
+            ),
             const SizedBox(height: 32),
             CustomButton(
               label: 'Salvar',
-              onPressed: () {
-                // TODO: implementar salvamento de nome, e-mail, telefone e avatar
-              },
+              onPressed: _saveProfile,
             ),
           ],
         ),
@@ -94,3 +169,4 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
+

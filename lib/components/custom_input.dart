@@ -9,6 +9,7 @@ class CustomInput extends StatelessWidget {
   final Widget? suffixIcon;
   final TextInputType keyboardType;
   final String? hintText;
+  final bool readOnly;  // Added readOnly parameter
 
   const CustomInput({
     Key? key,
@@ -18,6 +19,7 @@ class CustomInput extends StatelessWidget {
     this.suffixIcon,
     this.keyboardType = TextInputType.text,
     this.hintText,
+    this.readOnly = false,  // Default to false
   }) : super(key: key);
 
   @override
@@ -32,6 +34,7 @@ class CustomInput extends StatelessWidget {
         border: const OutlineInputBorder(),
         suffixIcon: suffixIcon,
       ),
+      readOnly: readOnly,  // Apply readOnly here
     );
   }
 }
