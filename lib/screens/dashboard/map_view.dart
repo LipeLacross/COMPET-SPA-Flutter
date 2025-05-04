@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../services/report_service.dart';
+import '../beneficiary_detail_screen.dart';
+import '../../models/offline_record.dart';
 
-/// Exibe OSM + WMS do SICAR e marcadores de atividades/beneficiários
+/// Mapa interativo exibindo OSM + WMS SICAR e navegação para detalhes
 class MapView extends StatefulWidget {
   final bool showOnlyBeneficiaries;
   const MapView({Key? key, this.showOnlyBeneficiaries = false}) : super(key: key);
@@ -17,7 +19,7 @@ class MapView extends StatefulWidget {
 class _MapViewState extends State<MapView> {
   final _reportService = ReportService();
   List<Marker> _activityMarkers = [];
-  List<Marker> _benefMarkers    = [];
+  List<Marker> _benefMarkers = [];
 
   @override
   void initState() {
@@ -49,7 +51,6 @@ class _MapViewState extends State<MapView> {
         point: LatLng(lat, lon),
         width: 40,
         height: 40,
-        // use child:, não builder:
         child: IconButton(
           icon: Icon(
             Icons.location_on,
@@ -57,8 +58,11 @@ class _MapViewState extends State<MapView> {
             color: isBeneficiary ? Colors.green : Colors.red,
           ),
           onPressed: () {
-            if (isBeneficiary) _showBeneficiaryDetails(props);
-            else               _showActivityDetails(props);
+            if (isBeneficiary) {
+              _navigateToBeneficiaryDetail(props);
+            } else {
+              _showActivityDetails(props);
+            }
           },
         ),
       );
@@ -66,41 +70,28 @@ class _MapViewState extends State<MapView> {
   }
 
   void _showActivityDetails(Map<String, dynamic> props) {
-    showModalBottomSheet(context: context, builder: (_) => Padding(
-      padding: const EdgeInsets.all(16),
-      child: Text('Atividade: ${props['description'] ?? '—'}'),
-    ));
+    showModalBottomSheet(
+      context: context,
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text('Atividade: ${props['description'] ?? '—'}'),
+      ),
+    );
   }
 
-  Future<void> _showBeneficiaryDetails(Map<String, dynamic> props) async {
-    final codImovel = props['cod_imovel'].toString();
-    final mapUrl = 'https://seu-backend.com/maps/beneficiary/$codImovel';
-
-    showModalBottomSheet(context: context, builder: (_) => Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(props['name'] ?? 'Sem nome',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          if (props['areaPreserved'] != null)
-            Text('Área: ${props['areaPreserved']} m²'),
-          const SizedBox(height: 12),
-          Image.network(
-            mapUrl,
-            height: 200,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            loadingBuilder: (ctx, child, prog) =>
-            prog == null ? child : const Center(child: CircularProgressIndicator()),
-            errorBuilder: (ctx, e, st) =>
-            const Center(child: Text('Não foi possível carregar o mapa.')),
-          ),
-        ],
+  void _navigateToBeneficiaryDetail(Map<String, dynamic> props) {
+    // Criar um OfflineRecord genérico para passar ao detail screen
+    final rec = OfflineRecord(
+      id: props['cod_imovel']?.toString() ?? DateTime.now().toIso8601String(),
+      payload: props,
+      createdAt: DateTime.now(),
+    );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BeneficiaryDetailScreen(record: rec),
       ),
-    ));
+    );
   }
 
   @override
@@ -117,12 +108,12 @@ class _MapViewState extends State<MapView> {
           initialZoom: 10.0,
         ),
         children: [
-          // 1) Camada base OSM
+          // Fundo OSM
           TileLayer(
             urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             subdomains: const ['a', 'b', 'c'],
           ),
-          // 2) WMS do SICAR
+          // Camada WMS SICAR
           TileLayer(
             wmsOptions: WMSTileLayerOptions(
               baseUrl: 'https://geoserver.car.gov.br/geoserver/sicar/wms',
@@ -131,7 +122,6 @@ class _MapViewState extends State<MapView> {
               transparent: true,
             ),
           ),
-          // 3) Marcadores
           MarkerLayer(markers: markers),
         ],
       ),

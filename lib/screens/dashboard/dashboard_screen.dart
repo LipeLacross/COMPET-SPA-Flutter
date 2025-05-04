@@ -7,7 +7,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../../models/offline_record.dart';
-import '../../models/report.dart';
 import '../../services/local_storage_service.dart';
 import '../../services/report_service.dart';
 import '../../utils/date_helper.dart';
@@ -15,10 +14,9 @@ import 'map_view.dart';
 import 'filter_bar.dart';
 import 'summary_cards.dart';
 import 'activity_chart.dart';
-import 'export_buttons.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({Key? key}) : super(key: key);
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -30,12 +28,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   List<OfflineRecord> _allRecords = [];
   List<OfflineRecord> _filteredRecords = [];
-  List<Report> _payments = [];
   int _beneficiaryCount = 0;
   bool _showOnlyBeneficiaries = false;
 
-  String? _searchName;
-  String? _selectedType;
+  String? _searchText;
   DateTimeRange? _selectedPeriod;
 
   @override
@@ -51,11 +47,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _loadData() async {
     try {
       final recs = await _storageService.fetchQueue();
-      final pays = await _reportService.fetchReports();
       if (!mounted) return;
       setState(() {
         _allRecords = recs;
-        _payments = pays;
         _applyFilters();
       });
     } catch (e) {
@@ -82,17 +76,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _applyFilters() {
     _filteredRecords = _allRecords.where((r) {
       final desc = (r.payload['description'] as String?)?.toLowerCase() ?? '';
-      if (!(_searchName?.isEmpty ?? true) && !desc.contains(_searchName!.toLowerCase())) return false;
-      if (_selectedType != null && _selectedType != 'Todos' && r.payload['type'] != _selectedType) return false;
+      if (!(_searchText?.isEmpty ?? true) &&
+          !desc.contains(_searchText!.toLowerCase())) return false;
       if (_selectedPeriod != null) {
         final d = DateTime.parse(r.payload['date'] as String);
-        if (d.isBefore(_selectedPeriod!.start) || d.isAfter(_selectedPeriod!.end)) return false;
+        if (d.isBefore(_selectedPeriod!.start) ||
+            d.isAfter(_selectedPeriod!.end)) return false;
       }
       return true;
     }).toList();
   }
 
-  List<List<dynamic>> _buildReportRows() => [
+  List<List<dynamic>> _buildCsvRows() => [
     ['Tipo', 'Descrição', 'Data', 'Valor'],
     ..._filteredRecords.map((r) => [
       r.payload['type'],
@@ -103,28 +98,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ];
 
   Future<void> _exportCsv() async {
-    final rows = _buildReportRows();
+    final rows = _buildCsvRows();
     final csv = const ListToCsvConverter().convert(rows);
     await Share.share(csv, subject: 'dashboard.csv');
   }
 
   Future<void> _exportPdf() async {
-    final rows = _buildReportRows();
-    final data = rows.skip(1).map((r) => r.map((e) => e.toString()).toList()).toList();
+    final rows = _buildCsvRows();
+    final data =
+    rows.skip(1).map((r) => r.map((e) => e.toString()).toList()).toList();
     final doc = pw.Document();
     doc.addPage(pw.Page(build: (_) {
       return pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text('Relatório de Monitoramento', style: pw.TextStyle(fontSize: 18)),
+          pw.Text('Relatório de Monitoramento',
+              style: pw.TextStyle(fontSize: 18)),
           pw.SizedBox(height: 8),
           pw.Text(_selectedPeriod != null
               ? 'Período: ${DateHelper.formatDate(_selectedPeriod!.start)} – ${DateHelper.formatDate(_selectedPeriod!.end)}'
               : 'Período: Todos'),
-          pw.SizedBox(height: 8),
-          pw.Text('Tipo: ${_selectedType ?? 'Todos'}'),
           pw.SizedBox(height: 12),
-          pw.Table.fromTextArray(headers: rows.first.map((h) => h.toString()).toList(), data: data),
+          pw.Table.fromTextArray(
+            headers: rows.first.map((h) => h.toString()).toList(),
+            data: data,
+          ),
         ],
       );
     }));
@@ -142,6 +140,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onPressed: _reloadAll,
             tooltip: 'Recarregar',
           ),
+          IconButton(
+            icon: const Icon(Icons.file_download),
+            onPressed: _exportCsv,
+            tooltip: 'Export CSV',
+          ),
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf),
+            onPressed: _exportPdf,
+            tooltip: 'Export PDF',
+          ),
         ],
       ),
       body: RefreshIndicator(
@@ -152,23 +160,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(8),
                 child: FilterBar(
-                  searchName: _searchName,
-                  selectedType: _selectedType,
+                  searchText: _searchText,
                   selectedPeriod: _selectedPeriod,
                   showOnlyBeneficiaries: _showOnlyBeneficiaries,
-                  onSearchChanged: (v) => setState(() {
-                    _searchName = v;
-                    _applyFilters();
-                  }),
-                  onTypeChanged: (v) => setState(() {
-                    _selectedType = v;
-                    _applyFilters();
-                  }),
-                  onPeriodChanged: (v) => setState(() {
-                    _selectedPeriod = v;
-                    _applyFilters();
-                  }),
-                  onBeneficiaryToggle: (val) => setState(() => _showOnlyBeneficiaries = val),
+                  onSearchChanged: (v) =>
+                      setState(() { _searchText = v; _applyFilters(); }),
+                  onPeriodChanged: (pr) =>
+                      setState(() { _selectedPeriod = pr; _applyFilters(); }),
+                  onBeneficiaryToggle: (val) =>
+                      setState(() => _showOnlyBeneficiaries = val),
                 ),
               ),
             ),
@@ -177,7 +177,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               sliver: SliverToBoxAdapter(
                 child: SummaryCards(
                   records: _filteredRecords,
-                  payments: _payments,
                   beneficiaryCount: _beneficiaryCount,
                 ),
               ),
@@ -192,12 +191,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(8),
                 child: MapView(showOnlyBeneficiaries: _showOnlyBeneficiaries),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: ExportButtons(onCsv: _exportCsv, onPdf: _exportPdf),
               ),
             ),
           ],
