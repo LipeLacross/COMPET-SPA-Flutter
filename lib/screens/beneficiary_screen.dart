@@ -31,28 +31,28 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
   TabController? _tabController;
 
   // Controllers para Área Coberta
-  final _areaTotalController = TextEditingController();
-  final _areaAppController = TextEditingController();
+  final _areaTotalController       = TextEditingController();
+  final _areaAppController         = TextEditingController();
   final _descriptionAreaController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _forestTypeController = TextEditingController();
-  final _animalsController = TextEditingController();
-  final _humanResourcesController = TextEditingController();
-  final _otherResourcesController = TextEditingController();
+  final _addressController         = TextEditingController();
+  final _forestTypeController      = TextEditingController();
+  final _animalsController         = TextEditingController();
+  final _humanResourcesController  = TextEditingController();
+  final _otherResourcesController  = TextEditingController();
 
   // Controller para Atividades
   final _descController = TextEditingController();
 
   // Serviços
-  final _geoService = GeolocationService();
+  final _geoService     = GeolocationService();
   final _storageService = LocalStorageService();
-  final _reportService = ReportService();
-  final _notifService = NotificationService();
+  final _reportService  = ReportService();
+  final _notifService   = NotificationService();
 
-  File? _pickedImage;
+  File?     _pickedImage;
   Position? _currentPos;
-  List<OfflineRecord> _records = [];
-  List<Report> _payments = [];
+  List<OfflineRecord> _records  = [];
+  List<Report>       _payments = [];
 
   @override
   void initState() {
@@ -104,90 +104,56 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
   }
 
   Future<void> _saveArea() async {
+    final total = double.tryParse(_areaTotalController.text);
+    final app   = double.tryParse(_areaAppController.text);
+    final hr    = int.tryParse(_humanResourcesController.text);
+
+    if (total == null || app == null || hr == null) {
+      return showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Dados Inválidos'),
+          content: const Text(
+            'Preencha corretamente:\n'
+                '- Área Total e Área APP com números válidos\n'
+                '- Recursos Humanos com número inteiro',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_addressController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Endereço é obrigatório!')),
+      );
+      return;
+    }
+
     final rec = OfflineRecord(
       id: DateTime.now().toIso8601String(),
       payload: {
-        'type': 'area',
-        'areaTotal': double.tryParse(_areaTotalController.text) ?? 0.0,
-        'areaApp': double.tryParse(_areaAppController.text) ?? 0.0,
-        'description': _descriptionAreaController.text,
-        'address': _addressController.text,
-        'forestType': _forestTypeController.text,
-        'animals': _animalsController.text,
-        'humanResources': _humanResourcesController.text,
+        'type':           'area',
+        'areaTotal':      total,
+        'areaApp':        app,
+        'description':    _descriptionAreaController.text,
+        'address':        _addressController.text,
+        'forestType':     _forestTypeController.text,
+        'animals':        _animalsController.text,
+        'humanResources': hr,
         'otherResources': _otherResourcesController.text,
-        'date': DateHelper.formatDate(DateTime.now()),
+        'date':           DateHelper.formatDate(DateTime.now()),
       },
       createdAt: DateTime.now(),
     );
     await _storageService.saveRecord(rec);
     _clearAreaInputs();
     _loadRecords();
-  }
-
-  Future<void> _showEditAreaDialog(OfflineRecord record) async {
-    _areaTotalController.text = record.payload['areaTotal'].toString();
-    _areaAppController.text = record.payload['areaApp'].toString();
-    _descriptionAreaController.text = record.payload['description'];
-    _addressController.text = record.payload['address'];
-    _forestTypeController.text = record.payload['forestType'];
-    _animalsController.text = record.payload['animals'];
-    _humanResourcesController.text = record.payload['humanResources'] ?? '';
-    _otherResourcesController.text = record.payload['otherResources'] ?? '';
-
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Editar Área'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              CustomInput(label: 'Área Total (m²)', controller: _areaTotalController),
-              const SizedBox(height: 8),
-              CustomInput(label: 'Área APP (m²)', controller: _areaAppController),
-              const SizedBox(height: 8),
-              CustomInput(label: 'Descrição', controller: _descriptionAreaController),
-              const SizedBox(height: 8),
-              CustomInput(label: 'Endereço', controller: _addressController),
-              const SizedBox(height: 8),
-              CustomInput(label: 'Tipo de Mata', controller: _forestTypeController),
-              const SizedBox(height: 8),
-              CustomInput(label: 'Animais na Região', controller: _animalsController),
-              const SizedBox(height: 8),
-              CustomInput(label: 'Recursos Humanos', controller: _humanResourcesController),
-              const SizedBox(height: 8),
-              CustomInput(label: 'Outros Recursos', controller: _otherResourcesController),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Salvar')),
-        ],
-      ),
-    );
-
-    if (ok ?? false) {
-      final updated = OfflineRecord(
-        id: record.id,
-        payload: {
-          'type': 'area',
-          'areaTotal': double.tryParse(_areaTotalController.text) ?? 0.0,
-          'areaApp': double.tryParse(_areaAppController.text) ?? 0.0,
-          'description': _descriptionAreaController.text,
-          'address': _addressController.text,
-          'forestType': _forestTypeController.text,
-          'animals': _animalsController.text,
-          'humanResources': _humanResourcesController.text,
-          'otherResources': _otherResourcesController.text,
-          'date': record.payload['date'],
-        },
-        createdAt: record.createdAt,
-      );
-      await _storageService.updateRecord(updated);
-      _clearAreaInputs();
-      _loadRecords();
-    }
   }
 
   void _clearAreaInputs() {
@@ -201,9 +167,91 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
     _otherResourcesController.clear();
   }
 
+  Future<void> _showEditAreaDialog(OfflineRecord record) async {
+    _areaTotalController.text       = record.payload['areaTotal'].toString();
+    _areaAppController.text         = record.payload['areaApp'].toString();
+    _descriptionAreaController.text = record.payload['description'];
+    _addressController.text         = record.payload['address'];
+    _forestTypeController.text      = record.payload['forestType'];
+    _animalsController.text         = record.payload['animals'];
+    _humanResourcesController.text  = record.payload['humanResources'].toString();
+    _otherResourcesController.text  = record.payload['otherResources'];
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Editar Área'),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              CustomInput(
+                label: 'Área Total (m²)',
+                controller: _areaTotalController,
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 8),
+              CustomInput(
+                label: 'Área APP (m²)',
+                controller: _areaAppController,
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 8),
+              CustomInput(label: 'Descrição', controller: _descriptionAreaController),
+              const SizedBox(height: 8),
+              CustomInput(label: 'Endereço', controller: _addressController),
+              const SizedBox(height: 8),
+              CustomInput(label: 'Tipo de Mata', controller: _forestTypeController),
+              const SizedBox(height: 8),
+              CustomInput(label: 'Animais na Região', controller: _animalsController),
+              const SizedBox(height: 8),
+              CustomInput(
+                label: 'Recursos Humanos',
+                controller: _humanResourcesController,
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 8),
+              CustomInput(label: 'Outros Recursos', controller: _otherResourcesController),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Salvar')),
+        ],
+      ),
+    );
+
+    if (ok ?? false) {
+      final total = double.tryParse(_areaTotalController.text) ?? 0.0;
+      final app   = double.tryParse(_areaAppController.text) ?? 0.0;
+      final hr    = int.tryParse(_humanResourcesController.text) ?? 0;
+
+      final updated = OfflineRecord(
+        id: record.id,
+        payload: {
+          'type':           'area',
+          'areaTotal':      total,
+          'areaApp':        app,
+          'description':    _descriptionAreaController.text,
+          'address':        _addressController.text,
+          'forestType':     _forestTypeController.text,
+          'animals':        _animalsController.text,
+          'humanResources': hr,
+          'otherResources': _otherResourcesController.text,
+          'date':           record.payload['date'],
+        },
+        createdAt: record.createdAt,
+      );
+
+      await _storageService.updateRecord(updated);
+      _clearAreaInputs();
+      _loadRecords();
+    }
+  }
+
   Future<void> _saveActivity() async {
     if (_descController.text.trim().isEmpty) {
-      showDialog(
+      return showDialog(
         context: context,
         builder: (_) => AlertDialog(
           title: const Text('Atenção'),
@@ -213,7 +261,6 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
           ],
         ),
       );
-      return;
     }
     final picked = await ImagePicker().pickImage(source: ImageSource.camera);
     if (picked == null) return;
@@ -223,12 +270,12 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
     final rec = OfflineRecord(
       id: DateTime.now().toIso8601String(),
       payload: {
-        'type': 'activity',
+        'type':        'activity',
         'description': _descController.text,
-        'lat': _currentPos!.latitude,
-        'lng': _currentPos!.longitude,
-        'imagePath': _pickedImage!.path,
-        'date': DateHelper.formatDate(DateTime.now()),
+        'lat':         _currentPos!.latitude,
+        'lng':         _currentPos!.longitude,
+        'imagePath':   _pickedImage!.path,
+        'date':        DateHelper.formatDate(DateTime.now()),
       },
       createdAt: DateTime.now(),
     );
@@ -264,7 +311,6 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Enquanto não autorizado ou controlador não inicializado, mostra loading
     if (_tabController == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -289,17 +335,48 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
             padding: const EdgeInsets.all(16),
             child: ListView(
               children: [
-                CustomInput(label: 'Área Total (m²)', controller: _areaTotalController),
+                CustomInput(
+                  label: 'Área Total (m²)',
+                  controller: _areaTotalController,
+                  keyboardType: TextInputType.number,
+                ),
                 const SizedBox(height: 12),
-                CustomInput(label: 'Área APP (m²)', controller: _areaAppController),
+                CustomInput(
+                  label: 'Área APP (m²)',
+                  controller: _areaAppController,
+                  keyboardType: TextInputType.number,
+                ),
                 const SizedBox(height: 12),
-                CustomInput(label: 'Descrição (opcional)', controller: _descriptionAreaController),
+                CustomInput(
+                  label: 'Descrição (opcional)',
+                  controller: _descriptionAreaController,
+                ),
                 const SizedBox(height: 12),
-                CustomInput(label: 'Endereço', controller: _addressController),
+                CustomInput(
+                  label: 'Endereço',
+                  controller: _addressController,
+                ),
                 const SizedBox(height: 12),
-                CustomInput(label: 'Tipo de Mata', controller: _forestTypeController),
+                CustomInput(
+                  label: 'Tipo de Mata',
+                  controller: _forestTypeController,
+                ),
                 const SizedBox(height: 12),
-                CustomInput(label: 'Animais na Região', controller: _animalsController),
+                CustomInput(
+                  label: 'Animais na Região',
+                  controller: _animalsController,
+                ),
+                const SizedBox(height: 12),
+                CustomInput(
+                  label: 'Recursos Humanos',
+                  controller: _humanResourcesController,
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 12),
+                CustomInput(
+                  label: 'Outros Recursos (opcional)',
+                  controller: _otherResourcesController,
+                ),
                 const SizedBox(height: 20),
                 CustomButton(label: 'Registrar Área', onPressed: _saveArea),
                 const Divider(height: 40),
@@ -329,7 +406,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
                     ),
                   ),
                 ))
-                    ,
+                    .toList(),
                 const SizedBox(height: 20),
                 WhatsAppButton(
                   phone: '5574981256120',
@@ -376,7 +453,11 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
                         .map((r) => Card(
                       margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
-                        leading: Image.file(File(r.payload['imagePath']), width: 50, fit: BoxFit.cover),
+                        leading: Image.file(
+                          File(r.payload['imagePath']),
+                          width: 50,
+                          fit: BoxFit.cover,
+                        ),
                         title: Text(r.payload['description']),
                         subtitle: Text('Em ${r.payload['date']}'),
                         trailing: const Icon(Icons.location_on, color: Colors.green),

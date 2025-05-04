@@ -1,5 +1,6 @@
-//beneficiary_edit_screen.dart
+// lib/screens/beneficiary_edit_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../components/custom_input.dart';
 import '../components/custom_button.dart';
 import '../services/api_service.dart';
@@ -28,11 +29,35 @@ class _BeneficiaryEditScreenState extends State<BeneficiaryEditScreen> {
   }
 
   Future<void> _save() async {
+    // Validação de campos
+    final area = double.tryParse(_areaCtrl.text.trim());
+    if (area == null) {
+      return showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Área inválida'),
+          content: const Text('Por favor informe um valor numérico válido para a área.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+          ],
+        ),
+      );
+    }
+    if (_nameCtrl.text.trim().isEmpty || _servCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nome e Serviço são obrigatórios')),
+      );
+      return;
+    }
+
+    // Cria objeto atualizado
     final updated = Beneficiary(
       name: _nameCtrl.text.trim(),
-      areaPreserved: double.tryParse(_areaCtrl.text) ?? 0,
+      areaPreserved: area,
       serviceDescription: _servCtrl.text.trim(),
     );
+
+    // Chamada à API e retorno
     await _api.put('beneficiaries/${widget.ben.name}', updated.toMap());
     Navigator.pop(context, updated);
   }
@@ -47,7 +72,14 @@ class _BeneficiaryEditScreenState extends State<BeneficiaryEditScreen> {
           children: [
             CustomInput(label: 'Nome', controller: _nameCtrl),
             const SizedBox(height: 12),
-            CustomInput(label: 'Área', controller: _areaCtrl, keyboardType: TextInputType.number),
+            CustomInput(
+              label: 'Área',
+              controller: _areaCtrl,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              ],
+            ),
             const SizedBox(height: 12),
             CustomInput(label: 'Serviço', controller: _servCtrl),
             const SizedBox(height: 24),

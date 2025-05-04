@@ -14,9 +14,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _identifierController = TextEditingController();
-  final _passController = TextEditingController();
-  final _auth = AuthService();
-  final _sm = SessionManager();
+  final _passController       = TextEditingController();
+  final _auth                 = AuthService();
+  final _sm                   = SessionManager();
 
   bool _loading = false;
   bool _obscurePassword = true;
@@ -31,21 +31,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Salva token e role
       await _sm.saveToken(result['token'] as String);
-      await _sm.saveUserRole(result['role'] as String);
+      final role = result['role'] as String;
+      await _sm.saveUserRole(role);
 
-      // Salva apelido (nickname) - usa o identificador se for apelido
-      final nickname = result['nickname'] as String? ?? _identifierController.text.trim();
+      // Salva apelido (nickname)
+      final nickname = result['nickname'] as String?
+          ?? _identifierController.text.trim();
       await _sm.saveNickname(nickname);
 
-      // Se vier fullName e email no result, salva também
+      // Salva demais campos opcionais
       if (result.containsKey('fullName')) {
         await _sm.saveFullName(result['fullName'] as String);
       }
       if (result.containsKey('email')) {
         await _sm.saveEmail(result['email'] as String);
       }
-
-      // Se vier telefone/biografia do backend, salve-os assim:
       if (result.containsKey('phone')) {
         await _sm.savePhone(result['phone'] as String);
       }
@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       // Navegação conforme papel
-      if (result['role'] == 'usuario ') {
+      if (role == 'admin') {
         Navigator.pushReplacementNamed(context, '/admin');
       } else {
         Navigator.pushReplacementNamed(context, '/home');
@@ -86,7 +86,10 @@ class _LoginScreenState extends State<LoginScreen> {
               style: Theme.of(context)
                   .textTheme
                   .headlineSmall
-                  ?.copyWith(color: primary, fontWeight: FontWeight.bold),
+                  ?.copyWith(
+                color: primary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 32),
             CustomInput(
@@ -100,7 +103,9 @@ class _LoginScreenState extends State<LoginScreen> {
               obscureText: _obscurePassword,
               suffixIcon: IconButton(
                 icon: Icon(
-                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  _obscurePassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
                 ),
                 onPressed: () => setState(() {
                   _obscurePassword = !_obscurePassword;

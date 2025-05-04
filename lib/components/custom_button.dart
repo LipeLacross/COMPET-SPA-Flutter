@@ -1,10 +1,16 @@
+// lib/components/custom_button.dart
 import 'package:flutter/material.dart';
 
 class CustomButton extends StatelessWidget {
   final String label;
-  final VoidCallback onPressed;
+  // Agora Nullable, para podermos desabilitar o botão
+  final VoidCallback? onPressed;
 
-  const CustomButton({super.key, required this.label, required this.onPressed});
+  const CustomButton({
+    super.key,
+    required this.label,
+    this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {

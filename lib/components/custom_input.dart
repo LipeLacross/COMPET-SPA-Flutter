@@ -1,6 +1,6 @@
 // lib/components/custom_input.dart
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomInput extends StatelessWidget {
   final String label;
@@ -10,6 +10,7 @@ class CustomInput extends StatelessWidget {
   final TextInputType keyboardType;
   final String? hintText;
   final bool readOnly;  // Added readOnly parameter
+  final List<TextInputFormatter>? inputFormatters;  // Added inputFormatters
 
   const CustomInput({
     super.key,
@@ -20,6 +21,7 @@ class CustomInput extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.hintText,
     this.readOnly = false,  // Default to false
+    this.inputFormatters,  // Default null
   });
 
   @override
@@ -28,6 +30,7 @@ class CustomInput extends StatelessWidget {
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,  // Apply inputFormatters
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,

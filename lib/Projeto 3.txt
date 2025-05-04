@@ -40,7 +40,7 @@ nom_tema: Nome do tema que compõe o cadastro (Área de Preservação Permanente
 
 Link para o GeoServer SICAR: https://geoserver.car.gov.br/geoserver/sicar/wfs
 
-Funcionalidades do Sistema
+Funcionalidades do SistemaM
 1. Sistema Web (Administração e Visualização)
 O Sistema Web será utilizado pelos analistas da SEMAS para gerenciar dados, gerar relatórios e acompanhar indicadores dos beneficiários.
 

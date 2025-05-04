@@ -1,4 +1,4 @@
-//auth_service.dart
+// lib/services/auth_service.dart
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
@@ -8,8 +8,48 @@ class AuthService {
   /// Ativa o mock (in-memory) somente em modo debug.
   static const bool _mockEnabled = kDebugMode;
 
-  /// “Banco” em memória para mock.
-  static final List<Map<String, String>> _mockUsers = [];
+  /// “Banco” em memória para mock, com três usuários:
+  /// 1) admin/admin           | role: admin
+  /// 2) usuario/usuario       | role: usuario
+  /// 3) beneficiario/beneficiario | role: beneficiary
+  static final List<Map<String, String>> _mockUsers = [
+    {
+      'email': 'admin',
+      'password': 'admin',
+      'role': 'admin',
+      'nickname': 'admin',
+      'fullName': 'Administrador',
+      'phone': '(11) 9999-8888',
+      'biography': 'Sou o administrador do sistema.',
+      'avatarPath': '/assets/avatars/admin.png',
+      'cpf': '000.000.000-00',
+      'dateOfBirth': '1970-01-01',
+    },
+    {
+      'email': 'usuario',
+      'password': 'usuario',
+      'role': 'usuario',
+      'nickname': 'usuario',
+      'fullName': 'Usuário Comum',
+      'phone': '(21) 98877-6655',
+      'biography': 'Perfil de usuário comum para testes.',
+      'avatarPath': '/assets/avatars/user.png',
+      'cpf': '111.111.111-11',
+      'dateOfBirth': '1990-05-15',
+    },
+    {
+      'email': 'beneficiario',
+      'password': 'beneficiario',
+      'role': 'beneficiary',
+      'nickname': 'benefício',
+      'fullName': 'Beneficiário Exemplo',
+      'phone': '(31) 97766-5544',
+      'biography': 'Beneficiário com acesso especial a recursos.',
+      'avatarPath': '/assets/avatars/beneficiary.png',
+      'cpf': '222.222.222-22',
+      'dateOfBirth': '1985-10-25',
+    },
+  ];
 
   /// Base URL para o backend real (usado em release).
   final String _baseUrl = 'http://10.0.2.2:8080/auth';
@@ -25,9 +65,18 @@ class AuthService {
       if (user.isEmpty) {
         throw Exception('Credenciais inválidas (mock)');
       }
+      // Retorna todas as informações de perfil do mock
       return {
         'token': 'fake-token-for-${user['email']}',
-        'role': user['role'] ?? 'usuario',  // Simula o papel do usuário (admin ou usuário)
+        'role': user['role']!,
+        'nickname': user['nickname']!,
+        'fullName': user['fullName']!,
+        'email': user['email']!,
+        'phone': user['phone']!,
+        'biography': user['biography']!,
+        'avatarPath': user['avatarPath']!,
+        'cpf': user['cpf']!,
+        'dateOfBirth': user['dateOfBirth']!,
       };
     }
 
@@ -48,7 +97,16 @@ class AuthService {
       final data = json.decode(res.body) as Map<String, dynamic>;
       return {
         'token': data['token'] as String,
-        'role': data['role'] as String, // Aqui adicionamos o papel (role)
+        'role': data['role'] as String,
+        // campos opcionais do real backend (se houver)
+        if (data.containsKey('nickname')) 'nickname': data['nickname'],
+        if (data.containsKey('fullName')) 'fullName': data['fullName'],
+        if (data.containsKey('email')) 'email': data['email'],
+        if (data.containsKey('phone')) 'phone': data['phone'],
+        if (data.containsKey('biography')) 'biography': data['biography'],
+        if (data.containsKey('avatarPath')) 'avatarPath': data['avatarPath'],
+        if (data.containsKey('cpf')) 'cpf': data['cpf'],
+        if (data.containsKey('dateOfBirth')) 'dateOfBirth': data['dateOfBirth'],
       };
     } else {
       throw Exception('Falha no login: ${res.body}');
@@ -71,7 +129,6 @@ class AuthService {
       if (exists) {
         throw Exception('E-mail já cadastrado (mock)');
       }
-      // Adiciona todos os campos no mock, incluindo o papel (role)
       _mockUsers.add({
         'nickname': nickname,
         'fullName': fullName,
@@ -79,7 +136,10 @@ class AuthService {
         'password': password,
         'cpf': cpf,
         'dateOfBirth': dateOfBirth,
-        'role': role, // Papel adicionado
+        'role': role,
+        'phone': '',
+        'biography': '',
+        'avatarPath': '',
       });
       return;
     }
@@ -97,7 +157,7 @@ class AuthService {
         'password': password,
         'cpf': cpf,
         'dateOfBirth': dateOfBirth,
-        'role': role, // Envia o papel para o backend
+        'role': role,
       }),
     )
         .timeout(
@@ -140,7 +200,6 @@ class AuthService {
 
   /// Método para debug: retorna todos os usuários cadastrados no mock.
   List<Map<String, String>> listMockUsers() {
-    // Devolve cópia para não permitir modificação externa
     return List<Map<String, String>>.from(_mockUsers);
   }
 }

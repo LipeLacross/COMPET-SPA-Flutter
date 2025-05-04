@@ -96,18 +96,24 @@ class _AdminScreenState extends State<AdminScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('${user.role == 'beneficiary' ? 'Revogar' : 'Conceder'} Beneficiário'),
+        title: Text(
+            '${user.role == 'beneficiary' ? 'Revogar' : 'Conceder'} Beneficiário'),
         content: Text(
             'Tem certeza que deseja ${user.role == 'beneficiary' ? 'revogar' : 'conceder'} o acesso de ${user.name}?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sim')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar')),
+          ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Sim')),
         ],
       ),
     );
     if (confirm != true) return;
 
-    final newRole = user.role == 'beneficiary' ? 'user' : 'beneficiary';
+    final newRole =
+    user.role == 'beneficiary' ? 'user' : 'beneficiary';
     await _api.changeUserRole(user.id, newRole);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -129,13 +135,21 @@ class _AdminScreenState extends State<AdminScreen>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Nome')),
-            TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: 'E-mail')),
+            TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(labelText: 'Nome')),
+            TextField(
+                controller: emailCtrl,
+                decoration: const InputDecoration(labelText: 'E-mail')),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Salvar')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar')),
+          ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Salvar')),
         ],
       ),
     );
@@ -147,9 +161,12 @@ class _AdminScreenState extends State<AdminScreen>
   }
 
   Future<void> _exportCsv() async {
-    final rows = <List<String>>[ ['Título', 'Data', 'URL'] ];
+    final rows = <List<String>>[
+      ['Título', 'Data', 'URL']
+    ];
     for (var r in _reports) {
-      rows.add([r.title, DateHelper.formatDate(r.date), r.url]);
+      rows
+          .add([r.title, DateHelper.formatDate(r.date), r.url]);
     }
     final csvString = const ListToCsvConverter().convert(rows);
     await Share.share(csvString, subject: 'Relatórios.csv');
@@ -159,7 +176,9 @@ class _AdminScreenState extends State<AdminScreen>
     final pdf = pw.Document();
     pdf.addPage(pw.Page(build: (_) {
       final headers = ['Título', 'Data', 'URL'];
-      final data = _reports.map((r) => [r.title, DateHelper.formatDate(r.date), r.url]).toList();
+      final data = _reports
+          .map((r) => [r.title, DateHelper.formatDate(r.date), r.url])
+          .toList();
       return pw.Column(children: [
         pw.Text('Relatórios', style: const pw.TextStyle(fontSize: 18)),
         pw.SizedBox(height: 12),
@@ -181,7 +200,8 @@ class _AdminScreenState extends State<AdminScreen>
   Widget build(BuildContext context) {
     final filteredUsers = _users.where((u) {
       final q = _searchController.text.toLowerCase();
-      return u.name.toLowerCase().contains(q) || u.email.toLowerCase().contains(q);
+      return u.name.toLowerCase().contains(q) ||
+          u.email.toLowerCase().contains(q);
     }).toList();
 
     return Scaffold(
@@ -189,13 +209,16 @@ class _AdminScreenState extends State<AdminScreen>
         title: const Text('Administração'),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [ Tab(text: 'Usuários'), Tab(text: 'Pagamentos') ],
+          tabs: const [
+            Tab(text: 'Usuários'),
+            Tab(text: 'Pagamentos'),
+          ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          // === Usuarios com filtro e edição ===
+          // === Usuários com filtro e edição ===
           Column(
             children: [
               Padding(
@@ -217,7 +240,8 @@ class _AdminScreenState extends State<AdminScreen>
                   itemBuilder: (_, i) {
                     final user = filteredUsers[i];
                     return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 8),
                       child: ListTile(
                         title: Text(user.name),
                         subtitle: Text(user.email),
@@ -226,9 +250,11 @@ class _AdminScreenState extends State<AdminScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              icon: const Icon(Icons.edit,
+                                  color: Colors.blue),
                               tooltip: 'Editar usuário',
-                              onPressed: () => _openEditUser(user),
+                              onPressed: () =>
+                                  _openEditUser(user),
                             ),
                             Text(user.role),
                             const SizedBox(width: 8),
@@ -237,12 +263,17 @@ class _AdminScreenState extends State<AdminScreen>
                                 user.role == 'beneficiary'
                                     ? Icons.remove_circle
                                     : Icons.check_circle,
-                                color: user.role == 'beneficiary' ? Colors.red : Colors.green,
+                                color: user.role ==
+                                    'beneficiary'
+                                    ? Colors.red
+                                    : Colors.green,
                               ),
-                              tooltip: user.role == 'beneficiary'
+                              tooltip: user.role ==
+                                  'beneficiary'
                                   ? 'Revogar Beneficiário'
                                   : 'Conceder Beneficiário',
-                              onPressed: () => _toggleBeneficiary(user),
+                              onPressed: () =>
+                                  _toggleBeneficiary(user),
                             ),
                           ],
                         ),
@@ -253,26 +284,30 @@ class _AdminScreenState extends State<AdminScreen>
               ),
             ],
           ),
+
           // === Pagamentos com exportação ===
           Column(
             children: [
               Padding(
                 padding: const EdgeInsets.all(8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.file_download),
-                      label: const Text('Export CSV'),
-                      onPressed: _exportCsv,
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.picture_as_pdf),
-                      label: const Text('Export PDF'),
-                      onPressed: _exportPdf,
-                    ),
-                  ],
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.file_download),
+                        label: const Text('Export CSV'),
+                        onPressed: _exportCsv,
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.picture_as_pdf),
+                        label: const Text('Export PDF'),
+                        onPressed: _exportPdf,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Expanded(
