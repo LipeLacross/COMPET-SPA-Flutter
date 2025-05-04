@@ -1,10 +1,10 @@
-// lib/screens/signup_screen.dart
-
+//signup_screen.dart
 import 'package:flutter/material.dart';
 import '../components/custom_input.dart';
 import '../components/custom_button.dart';
 import '../services/auth_service.dart';
 import '../services/session_manager.dart';
+import 'package:intl/intl.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({Key? key}) : super(key: key);
@@ -16,26 +16,64 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _nicknameController = TextEditingController();
   final _fullNameController = TextEditingController();
-  final _cpfController      = TextEditingController();
-  final _dobController      = TextEditingController();
-  final _emailController    = TextEditingController();
+  final _cpfController = TextEditingController();
+  final _dobController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   final _auth = AuthService();
-  final _sm   = SessionManager();
+  final _sm = SessionManager();
 
   bool _loading = false;
 
+  // Função para validar o formato do CPF
+  bool _isValidCPF(String cpf) {
+    RegExp cpfRegex = RegExp(r'^\d{3}\.\d{3}\.\d{3}-\d{2}$');
+    return cpfRegex.hasMatch(cpf);
+  }
+
+  // Função para validar o formato da data de nascimento
+  bool _isValidDOB(String dob) {
+    try {
+      DateFormat('dd/MM/yyyy').parseStrict(dob);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<void> _submit() async {
+    // Validações
+    String cpf = _cpfController.text.trim();
+    String dob = _dobController.text.trim();
+
+    if (!_isValidCPF(cpf)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('CPF inválido. Formato esperado: 000.000.000-00')),
+      );
+      return;
+    }
+
+    if (!_isValidDOB(dob)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Data de nascimento inválida. Formato esperado: DD/MM/AAAA')),
+      );
+      return;
+    }
+
     setState(() => _loading = true);
     try {
+      // Define o role como "usuário" por padrão
+      String role = "usuario"; // Usuário padrão
+
       await _auth.signup(
-        nickname:      _nicknameController.text.trim(),
-        fullName:      _fullNameController.text.trim(),
-        email:         _emailController.text.trim(),
-        password:      _passwordController.text,
-        cpf:           _cpfController.text.trim(),
-        dateOfBirth:   _dobController.text.trim(),
+        nickname: _nicknameController.text.trim(),
+        fullName: _fullNameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        cpf: cpf,
+        dateOfBirth: dob,
+        role: role, // Role atribuído
       );
 
       // salva apelido em sessão

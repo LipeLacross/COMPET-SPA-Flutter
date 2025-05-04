@@ -15,42 +15,45 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # localização e mapas
-  geolocator: ^14.0.0
-  google_maps_flutter: ^2.2.0
+  geolocator: ^9.0.0  # Atualização para versão mais recente
+  google_maps_flutter: ^2.3.0  # Atualização para versão mais recente
 
   # gráficos
-  fl_chart: ^0.71.0
-  image_picker: ^0.8.7+3   # captura de imagem
+  fl_chart: ^0.71.0  # Atualização para versão mais recente
+  image_picker: ^0.8.7+5  # Atualização para versão mais recente
 
   # novos pacotes
-  csv: ^5.0.0
+  csv: ^5.0.1  # Atualização para versão mais recente
   pdf: ^3.8.1
   printing: ^5.12.0
-  share_plus: ^4.0.10
+  share_plus: ^11.0.0 # Atualização para versão mais recente
 
   # armazenamento local e offline queue
-  shared_preferences: ^2.1.0
-  hive: ^2.2.3
-  hive_flutter: ^1.1.0
+  shared_preferences: ^2.2.0  # Atualização para versão mais recente
+  hive: ^2.2.3  # Atualização para versão mais recente
+  hive_flutter: ^1.1.0  # Atualização para versão mais recente
 
   # permissões (Android/iOS)
-  permission_handler: ^12.0.0+1
+  permission_handler: ^12.0.0  # Atualização para versão mais recente
 
   # estado global
   provider: ^6.0.5
 
   # HTTP / API
   http: ^1.3.0
+  # icone pro app
+  flutter_launcher_icons: ^0.14.3
 
   # deep links e url launcher
   url_launcher: ^6.1.7
+  win32: ^5.12.0  # ou qualquer versão mais recente
 
   # internacionalização / formatação de data
-  intl: ^0.20.2
+  intl: ^0.20.2 # Atualização para versão mais recente
 
   # Firebase e notificações
-  firebase_core: ^3.13.0
-  firebase_messaging: ^15.2.5
+  firebase_core: ^3.13.0  # Atualização para versão mais recente
+  firebase_messaging: ^15.2.5  # Atualização para versão mais recente
   flutter_local_notifications: ^19.1.0
 
   # ícones adicionais (WhatsApp)
@@ -60,7 +63,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^5.0.0
+  flutter_lints: ^5.0.0  # Atualização para versão mais recente
 
 flutter:
   uses-material-design: true
@@ -71,3 +74,8 @@ flutter_local_notifications:
     ios: true
     linux: false  # Desabilite suporte para Linux, caso não esteja usando
 
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"  # Caminho do seu ícone

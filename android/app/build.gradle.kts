@@ -1,9 +1,3 @@
-plugins {
-    id("com.android.application")
-    id("kotlin-android")
-    id("dev.flutter.flutter-gradle-plugin")
-}
-
 android {
     namespace = "com.example.competspa"
     compileSdk = flutter.compileSdkVersion
@@ -21,14 +15,14 @@ android {
     }
 
     compileOptions {
-        // Java 8 + desugaring
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        // Atualiza para Java 11
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
         isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11" // Altere para Java 11
     }
 
     buildTypes {

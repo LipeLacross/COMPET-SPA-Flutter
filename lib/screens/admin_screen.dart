@@ -20,23 +20,37 @@ class AdminScreen extends StatefulWidget {
   State<AdminScreen> createState() => _AdminScreenState();
 }
 
-class _AdminScreenState extends State<AdminScreen>
-    with SingleTickerProviderStateMixin {
+class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final _api = ApiService();
-  final _sm  = SessionManager();
+  final _sm = SessionManager();
 
   List<Beneficiary> _bens = [];
-  List<Report>      _reps = [];
+  List<Report> _reps = [];
   bool _loadingBens = false;
   bool _loadingReps = false;
+  bool _isAdmin = false;  // Variável para verificar o papel de admin
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadBeneficiaries();
-    _loadReports();
+    _checkUserRole();  // Verificar o papel do usuário ao carregar a tela
+  }
+
+  // Função para verificar se o usuário é admin
+  Future<void> _checkUserRole() async {
+    final role = await _sm.getUserRole(); // Obtendo o papel do usuário
+    if (role != 'admin') {
+      // Redireciona para a tela principal caso não seja admin
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      setState(() {
+        _isAdmin = true; // Usuário é admin, permite o acesso
+      });
+      _loadBeneficiaries(); // Carrega os dados do admin
+      _loadReports();
+    }
   }
 
   Future<void> _loadBeneficiaries() async {
@@ -77,7 +91,7 @@ class _AdminScreenState extends State<AdminScreen>
     final token = const Uuid().v4();
     await _sm.saveBeneficiaryToken(token);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Acesso concedido! Token: \$token')),
+      SnackBar(content: Text('Acesso concedido! Token: $token')),
     );
   }
 
@@ -123,6 +137,12 @@ class _AdminScreenState extends State<AdminScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (!_isAdmin) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ); // Mostra loading até verificar o papel
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Administração'),
@@ -149,7 +169,7 @@ class _AdminScreenState extends State<AdminScreen>
                 child: ListTile(
                   title: Text(ben.name),
                   subtitle: Text(
-                    'Área: \${ben.areaPreserved}m²\n\${ben.serviceDescription}',
+                    'Área: ${ben.areaPreserved}m²\n${ben.serviceDescription}',
                   ),
                   isThreeLine: true,
                   trailing: Row(
@@ -207,7 +227,7 @@ class _AdminScreenState extends State<AdminScreen>
                       leading: const Icon(Icons.payment),
                       title: Text(r.title),
                       subtitle: Text(
-                        '\${DateHelper.formatDate(r.date)}\n\${r.url}',
+                        '${DateHelper.formatDate(r.date)}\n${r.url}',
                       ),
                       isThreeLine: true,
                       trailing: Row(

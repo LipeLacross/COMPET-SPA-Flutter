@@ -1,0 +1,172 @@
+Escopo do Projeto – Sistema de Pagamento por Serviços Ambientais (PSA) em Flutter
+
+Objetivo
+Desenvolver uma solução digital em Flutter para gerenciar o Sistema de Pagamento por Serviços Ambientais (PSA), permitindo à SEMAS-PE remunerar beneficiários pela preservação ambiental. O sistema será dividido em dois módulos:
+
+Sistema Web: Um painel de administração e relatórios para a SEMAS (Dashboard no Flutter).
+
+App Móvel: Uma plataforma exclusiva para beneficiários, com interface simples e intuitiva.
+
+Tecnologias e Bibliotecas
+O projeto considera o uso de algumas tecnologias e bibliotecas sugeridas, embora estas não sejam obrigatórias. Algumas das ferramentas que podem ser exploradas incluem:
+
+Nominatim, OpenStreetMap, GeoPy, GeoPandas, Folium: Para processamento de dados geoespaciais e visualização de mapas interativos.
+
+GeoServer SICAR: O GeoServer pode ser utilizado para fornecer dados geoespaciais sobre os imóveis rurais cadastrados no Cadastro Ambiental Rural (CAR), com informações sobre a localização, situação cadastral e a representação geoespacial dos imóveis.
+
+Além disso, bibliotecas como ipyleaflet podem ser utilizadas para criar mapas interativos com informações sobre os pontos no mapa, facilitando a visualização das atividades de conservação.
+
+GeoServer SICAR
+O GeoServer SICAR é uma solução para compartilhar dados espaciais, conforme as diretrizes do Open Geospatial Consortium (OGC), e pode ser integrado ao projeto para acessar informações sobre o Cadastro Ambiental Rural (CAR) dos imóveis rurais. Ele permite a visualização e o download de dados, como a localização, a situação cadastral e a representação geoespacial dos imóveis registrados no CAR.
+
+Atributos do GeoServer SICAR:
+cod_estado: Unidade da Federação onde o cadastro se localiza.
+
+municipio: Município do cadastro.
+
+num_area: Área bruta do imóvel rural em hectares.
+
+cod_imovel: Número de inscrição no Cadastro Ambiental Rural (CAR).
+
+ind_status: Situação do cadastro no CAR (AT - Ativo, PE - Pendente, SU - Suspenso, CA - Cancelado).
+
+des_condic: Condição do cadastro no fluxo de análise.
+
+ind_tipo: Tipo do imóvel rural (IRU - Imóvel Rural, AST - Assentamentos de Reforma Agrária, PCT - Território Tradicional).
+
+mod_fiscal: Número de módulos fiscais do imóvel rural.
+
+nom_tema: Nome do tema que compõe o cadastro (Área de Preservação Permanente, Reserva Legal, etc.).
+
+Link para o GeoServer SICAR: https://geoserver.car.gov.br/geoserver/sicar/wfs
+
+Funcionalidades do Sistema
+1. Sistema Web (Administração e Visualização)
+O Sistema Web será utilizado pelos analistas da SEMAS para gerenciar dados, gerar relatórios e acompanhar indicadores dos beneficiários.
+
+Cadastro e Gerenciamento de Beneficiários:
+
+Nome
+
+Extensão da área preservada
+
+Valor do benefício
+
+Recursos humanos associados
+
+Descrição do serviço prestado
+
+Dashboard de Análise de Dados:
+
+Visão geral do progresso de cada beneficiário
+
+Indicadores de performance do PSA
+
+Visualização geográfica de áreas de preservação (georreferenciamento)
+
+Mapas interativos com marcadores das atividades dos beneficiários, com filtros por região, data e tipo de atividade
+
+Relatórios Personalizados:
+
+Geração e exportação de relatórios em PDF/CSV para monitoramento e pagamentos
+
+Filtros por período, beneficiário e valor
+
+2. Sistema de Beneficiários
+Voltado para agricultores familiares, quilombolas e povos indígenas, com uma interface simplificada.
+
+Tela de Perfil e Histórico de Pagamentos:
+
+Cadastro da área total da propriedade e a área de preservação permanente (APP)
+
+Georreferenciamento da área
+
+Registro das atividades de conservação com fotos e geolocalização automática
+
+Armazenamento Offline:
+
+Capacidade de registrar dados offline e sincronizar automaticamente quando houver conexão à internet
+
+Notificações:
+
+Tela de "Meus Pagamentos" com informações sobre datas e valores
+
+Notificações push sobre liberação ou atraso de pagamento
+
+Suporte via WhatsApp com botão para iniciar conversa com o bot
+
+Exemplo de Componente de Suporte:
+dart
+Copiar
+Editar
+WhatsAppButton(
+  phone: '55DD9NNNNNNNN',
+  message: 'Olá, preciso de ajuda com o PSA.',
+)
+Requisitos Técnicos
+1. Requisitos Funcionais
+Web:
+
+Design responsivo (desktop, tablet, celular)
+
+Integração com APIs de mapas (Google Maps ou OpenStreetMap)
+
+Geração dinâmica de relatórios e dashboards interativos
+
+Mobile:
+
+Desenvolvimento para iOS e Android utilizando o Flutter com base unificada
+
+Modo offline para registro de dados com fila de envio
+
+Navegação simples e intuitiva
+
+2. Requisitos Não Funcionais
+Desempenho:
+
+Web: Alta disponibilidade e baixa latência
+
+Mobile: Aplicativo leve (<50 MB), rápido e estável em dispositivos modestos
+
+Segurança:
+
+Autenticação via JWT (JSON Web Token)
+
+Criptografia TLS nas comunicações
+
+Armazenamento seguro de tokens e dados sensíveis
+
+Escalabilidade:
+
+Arquitetura modular para evoluções futuras
+
+Backend preparado para suportar aumento no número de beneficiários
+
+Estrutura de Tecnologias
+Frontend:
+
+Flutter: Para desenvolvimento Web e Mobile (iOS/Android)
+
+Backend:
+
+RESTful API utilizando Node.js, Java ou .NET
+
+Banco de dados relacional (PostgreSQL ou MySQL)
+
+Geolocalização e Mapas:
+
+Google Maps SDK ou MapLibre (open-source)
+
+Notificações:
+
+Firebase Cloud Messaging (FCM)
+
+Dependências Flutter:
+
+geolocator e google_maps_flutter para geolocalização
+
+http ou dio para chamadas API
+
+url_launcher para integrar o botão do WhatsApp
+
+sqflite ou hive para armazenamento offline

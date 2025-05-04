@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-
 import 'firebase_options.dart';
-import 'theme.dart';
 import 'services/notification_service.dart';
+import 'services/session_manager.dart';  // Importando o SessionManager
+import 'theme.dart';
 
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
@@ -24,17 +24,24 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await NotificationService().init();
-  runApp(const MyApp());
+
+  // Carregar a preferência de tema
+  final sm = SessionManager();
+  bool isDarkMode = await sm.getTheme();
+
+  runApp(MyApp(isDarkMode: isDarkMode));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isDarkMode;
+
+  const MyApp({super.key, required this.isDarkMode});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sistema PSA',
-      theme: appTheme,
+      theme: isDarkMode ? ThemeData.dark() : ThemeData.light(), // Aplica o tema claro ou escuro
       initialRoute: '/login',
       routes: <String, WidgetBuilder>{
         '/login':          (_) => const LoginScreen(),

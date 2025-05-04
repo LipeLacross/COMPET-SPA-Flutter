@@ -27,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _loadProfile();
+    _loadThemePreference();  // Carregar a preferência do tema
   }
 
   // Carrega o perfil (nome completo, apelido, email, telefone)
@@ -43,6 +44,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _emailController.text = email ?? '';
       _phoneController.text = phone ?? '';
       _biographyController.text = bio ?? ''; // Carrega a biografia
+    });
+  }
+
+  // Carrega a preferência de tema
+  Future<void> _loadThemePreference() async {
+    final themePreference = await _sm.getTheme();
+    setState(() {
+      _isDarkMode = themePreference;
     });
   }
 
@@ -76,11 +85,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // Função para alterar o modo de exibição (Claro/Oscuro)
-  void _toggleTheme() {
+  void _toggleTheme() async {
     setState(() {
       _isDarkMode = !_isDarkMode;
-      // Aqui você pode salvar a preferência do usuário se necessário
     });
+    // Salva a preferência do tema no SessionManager
+    await _sm.saveTheme(_isDarkMode);
   }
 
   @override
@@ -132,7 +142,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             CustomInput(
               label: 'E-mail',  // E-mail (não editável)
               controller: _emailController,
-              // Não use 'enabled' diretamente, adicione um parâmetro 'enabled' no CustomInput ou apenas faça o campo não-editável
               readOnly: true,  // Modifique para 'readOnly' ou adicione 'enabled' no widget
             ),
             const SizedBox(height: 16),
@@ -169,4 +178,3 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
-

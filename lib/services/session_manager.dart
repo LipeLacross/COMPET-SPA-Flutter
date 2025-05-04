@@ -1,3 +1,4 @@
+//sessions manager_dart
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SessionManager {
@@ -9,6 +10,19 @@ class SessionManager {
   static const _avatarKey            = 'user_avatar_path';
   static const _fullNameKey          = 'user_full_name';  // Novo: para nome completo
   static const _biographyKey         = 'user_biography';  // Novo: para biografia
+  static const _themeKey = 'user_theme';  // Nova chave para o tema (escuro/claro)
+
+  // Método para salvar a preferência de tema
+  Future<void> saveTheme(bool isDarkMode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_themeKey, isDarkMode);
+  }
+
+  // Método para recuperar a preferência de tema
+  Future<bool> getTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_themeKey) ?? false;  // Retorna `false` por padrão (modo claro)
+  }
 
   // NOVO: chave para o token de beneficiário
   static const _beneficiaryTokenKey  = 'beneficiary_token';

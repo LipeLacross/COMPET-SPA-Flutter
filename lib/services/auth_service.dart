@@ -1,3 +1,4 @@
+//auth_service.dart
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
@@ -26,7 +27,7 @@ class AuthService {
       }
       return {
         'token': 'fake-token-for-${user['email']}',
-        'role': 'admin',  // Simula o papel do usuário (admin ou beneficiário)
+        'role': user['role'] ?? 'usuario',  // Simula o papel do usuário (admin ou usuário)
       };
     }
 
@@ -62,6 +63,7 @@ class AuthService {
     required String password,
     required String cpf,
     required String dateOfBirth,
+    String role = 'usuario', // Papel padrão "usuario"
   }) async {
     if (_mockEnabled) {
       await Future.delayed(const Duration(seconds: 1)); // Simula rede
@@ -69,7 +71,7 @@ class AuthService {
       if (exists) {
         throw Exception('E-mail já cadastrado (mock)');
       }
-      // Adiciona todos os campos no mock
+      // Adiciona todos os campos no mock, incluindo o papel (role)
       _mockUsers.add({
         'nickname': nickname,
         'fullName': fullName,
@@ -77,6 +79,7 @@ class AuthService {
         'password': password,
         'cpf': cpf,
         'dateOfBirth': dateOfBirth,
+        'role': role, // Papel adicionado
       });
       return;
     }
@@ -94,6 +97,7 @@ class AuthService {
         'password': password,
         'cpf': cpf,
         'dateOfBirth': dateOfBirth,
+        'role': role, // Envia o papel para o backend
       }),
     )
         .timeout(
