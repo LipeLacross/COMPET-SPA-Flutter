@@ -11,10 +11,10 @@ class ApiService {
   Future<http.Response> post(String path, Map<String, dynamic> data) async {
     final token = await _sm.getToken();
     return await http.post(
-      Uri.parse('$baseUrl$path'),
+      Uri.parse('\$baseUrl\$path'),
       headers: {
         'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
+        if (token != null) 'Authorization': 'Bearer \$token',
       },
       body: json.encode(data),
     );
@@ -24,10 +24,10 @@ class ApiService {
   Future<http.Response> get(String path) async {
     final token = await _sm.getToken();
     return await http.get(
-      Uri.parse('$baseUrl$path'),
+      Uri.parse('\$baseUrl\$path'),
       headers: {
         'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
+        if (token != null) 'Authorization': 'Bearer \$token',
       },
     );
   }
@@ -36,10 +36,10 @@ class ApiService {
   Future<http.Response> put(String path, Map<String, dynamic> data) async {
     final token = await _sm.getToken();
     return await http.put(
-      Uri.parse('$baseUrl$path'),
+      Uri.parse('\$baseUrl\$path'),
       headers: {
         'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
+        if (token != null) 'Authorization': 'Bearer \$token',
       },
       body: json.encode(data),
     );
@@ -47,7 +47,7 @@ class ApiService {
 
   // Método para buscar dados do mapa (Novo endpoint para o mapa)
   Future<Map<String, dynamic>> getMapData() async {
-    final response = await http.get(Uri.parse('$baseUrl/map-data'));
+    final response = await http.get(Uri.parse('\$baseUrl/map-data'));
 
     if (response.statusCode == 200) {
       return json.decode(response.body);  // Retorna os dados como um mapa
@@ -60,11 +60,26 @@ class ApiService {
   Future<http.Response> delete(String path) async {
     final token = await _sm.getToken();
     return await http.delete(
-      Uri.parse('$baseUrl$path'),
+      Uri.parse('\$baseUrl\$path'),
       headers: {
         'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
+        if (token != null) 'Authorization': 'Bearer \$token',
       },
     );
   }
+
+  /// Altera o role de um usuário (ex: para 'beneficiary' ou 'user')
+  Future<http.Response> changeUserRole(String userId, String newRole) async {
+    final token = await _sm.getToken();
+    final uri = Uri.parse('\$baseUrl/users/\$userId/role');
+    return await http.put(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer \$token',
+      },
+      body: json.encode({'role': newRole}),
+    );
+  }
 }
+

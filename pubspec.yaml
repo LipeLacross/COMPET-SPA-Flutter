@@ -11,75 +11,83 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # ícones da Apple
+  # Flutter e ícones
   cupertino_icons: ^1.0.8
+  flutter_localizations:
+    sdk: flutter  # traz intl 0.19.0
 
   # localização e mapas
-  geolocator: ^9.0.0  # Atualização para versão mais recente
-  google_maps_flutter: ^2.3.0  # Atualização para versão mais recente
+  geolocator: ^9.0.0
+  google_maps_flutter: ^2.3.0
 
-  # gráficos
-  fl_chart: ^0.71.0  # Atualização para versão mais recente
-  image_picker: ^0.8.7+5  # Atualização para versão mais recente
+  # gráficos e imagens
+  fl_chart: ^0.71.0
+  image_picker: ^0.8.7+5
 
-  # novos pacotes
-  csv: ^5.0.1  # Atualização para versão mais recente
+  # CSV, PDF e compartilhamento
+  csv: ^6.0.0                # compatível com easy_localization_generator :contentReference[oaicite:0]{index=0}
   pdf: ^3.8.1
   printing: ^5.12.0
-  share_plus: ^11.0.0 # Atualização para versão mais recente
+  share_plus: ^11.0.0
 
-  # armazenamento local e offline queue
-  shared_preferences: ^2.2.0  # Atualização para versão mais recente
-  hive: ^2.2.3  # Atualização para versão mais recente
-  hive_flutter: ^1.1.0  # Atualização para versão mais recente
+  # armazenamento local
+  shared_preferences: ^2.2.0
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
-  # permissões (Android/iOS)
-  permission_handler: ^12.0.0  # Atualização para versão mais recente
+  # permissões
+  permission_handler: ^12.0.0
 
-  # estado global
+  # estado e API
   provider: ^6.0.5
-
-  # HTTP / API
   http: ^1.3.0
-  # icone pro app
-  flutter_launcher_icons: ^0.14.3
-
-  # deep links e url launcher
   url_launcher: ^6.1.7
-  win32: ^5.12.0  # ou qualquer versão mais recente
+  win32: ^5.12.0
 
   # internacionalização / formatação de data
-  intl: ^0.20.2 # Atualização para versão mais recente
+  intl: ^0.19.0               # encaixa com flutter_localizations :contentReference[oaicite:1]{index=1}
 
-  # Firebase e notificações
-  firebase_core: ^3.13.0  # Atualização para versão mais recente
-  firebase_messaging: ^15.2.5  # Atualização para versão mais recente
+  # Firebase e notificações locais
+  firebase_core: ^3.13.0
+  firebase_messaging: ^15.2.5
   flutter_local_notifications: ^19.1.0
 
-  # ícones adicionais (WhatsApp)
+  # ícones adicionais e utilitários
   material_design_icons_flutter: ^7.0.7296
-
+  flutter_launcher_icons: ^0.14.3
   uuid: any
+
+  # easy_localization e loader
+  easy_localization: ^3.0.1
+  easy_localization_loader: ^2.0.2  # null-safe, Dart >=2.12 :contentReference[oaicite:2]{index=2}
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^5.0.0  # Atualização para versão mais recente
+  flutter_lints: ^5.0.0
+
+  # geração de código para as chaves de tradução
+  build_runner: ^2.4.0
+  easy_localization_generator: ^0.3.3   # null-safe, Dart >=3.0 :contentReference[oaicite:3]{index=3}
 
 flutter:
   uses-material-design: true
+
+  # assets de JSON de tradução
+  assets:
+    - assets/translations/
 
 flutter_local_notifications:
   platforms:
     android: true
     ios: true
-    linux: false  # Desabilite suporte para Linux, caso não esteja usando
-
+    linux: false
 
 flutter_launcher_icons:
-  android: true       # gera ícones pro Android
-  ios: true           # gera ícones pro iOS
+  android: true
+  ios: true
   windows:
-    generate: false         # DESATIVA geração de ícone no Windows
-  remove_alpha_ios: true   # remove canal alfa (requisito App Store)
+    generate: false
+  remove_alpha_ios: true
   image_path: "assets/icon/app_icon.png"

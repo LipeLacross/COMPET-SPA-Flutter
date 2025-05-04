@@ -1,226 +1,287 @@
+// lib/screens/admin_screen.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';  // para gerar token UUID
-
-import '../screens/beneficiary_edit_screen.dart';  // tela de edição
-import '../screens/beneficiary_detail_screen.dart'; // tela de detalhes
-import '../screens/report_edit_screen.dart';      // tela de edição/criação de pagamentos
+import 'package:csv/csv.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import '../services/api_service.dart';
-import '../services/session_manager.dart';  // para gerenciar token de beneficiário
-import '../models/beneficiary.dart';
+import '../services/session_manager.dart';
 import '../models/report.dart';
 import '../utils/date_helper.dart';
 
+/// Modelo temporário de usuário para administração
+class User {
+  final String id;
+  String name;
+  String email;
+  String role;
+
+  User({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.role,
+  });
+
+  factory User.fromMap(Map<String, dynamic> map) {
+    return User(
+      id: map['id'].toString(),
+      name: map['name'] ?? '',
+      email: map['email'] ?? '',
+      role: map['role'] ?? 'user',
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+    'name': name,
+    'email': email,
+    'role': role,
+  };
+}
+
 class AdminScreen extends StatefulWidget {
-  const AdminScreen({super.key});
+  const AdminScreen({Key? key}) : super(key: key);
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
 }
 
-class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStateMixin {
+class _AdminScreenState extends State<AdminScreen>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final _api = ApiService();
   final _sm = SessionManager();
 
-  List<Beneficiary> _bens = [];
-  List<Report> _reps = [];
-  bool _loadingBens = false;
-  bool _loadingReps = false;
-  bool _isAdmin = false;  // Variável para verificar o papel de admin
+  List<User> _users = [];
+  List<Report> _reports = [];
+  bool _loadingUsers = false;
+  bool _loadingReports = false;
+
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _checkUserRole();  // Verificar o papel do usuário ao carregar a tela
+    _loadUsers();
+    _loadReports();
   }
 
-  // Função para verificar se o usuário é admin
-  Future<void> _checkUserRole() async {
-    final role = await _sm.getUserRole(); // Obtendo o papel do usuário
-    if (role != 'admin') {
-      // Redireciona para a tela principal caso não seja admin
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
-      setState(() {
-        _isAdmin = true; // Usuário é admin, permite o acesso
-      });
-      _loadBeneficiaries(); // Carrega os dados do admin
-      _loadReports();
-    }
-  }
-
-  Future<void> _loadBeneficiaries() async {
-    setState(() => _loadingBens = true);
-    final res = await _api.get('beneficiaries');
+  Future<void> _loadUsers() async {
+    setState(() => _loadingUsers = true);
+    final res = await _api.get('users');
     final list = res.body.isNotEmpty
         ? List<Map<String, dynamic>>.from(json.decode(res.body))
         : <Map<String, dynamic>>[];
     setState(() {
-      _bens = list.map((m) => Beneficiary.fromMap(m)).toList();
-      _loadingBens = false;
+      _users = list.map((m) => User.fromMap(m)).toList();
+      _loadingUsers = false;
     });
   }
 
   Future<void> _loadReports() async {
-    setState(() => _loadingReps = true);
+    setState(() => _loadingReports = true);
     final res = await _api.get('reports');
     final list = res.body.isNotEmpty
         ? List<Map<String, dynamic>>.from(json.decode(res.body))
         : <Map<String, dynamic>>[];
     setState(() {
-      _reps = list.map((m) => Report.fromMap(m)).toList();
-      _loadingReps = false;
+      _reports = list.map((m) => Report.fromMap(m)).toList();
+      _loadingReports = false;
     });
   }
 
-  Future<void> _deleteBeneficiary(String name) async {
-    await _api.delete('beneficiaries/$name');
-    _loadBeneficiaries();
-  }
+  Future<void> _toggleBeneficiary(User user) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('${user.role == 'beneficiary' ? 'Revogar' : 'Conceder'} Beneficiário'),
+        content: Text(
+            'Tem certeza que deseja ${user.role == 'beneficiary' ? 'revogar' : 'conceder'} o acesso de ${user.name}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sim')),
+        ],
+      ),
+    );
+    if (confirm != true) return;
 
-  Future<void> _deleteReport(String id) async {
-    await _api.delete('reports/$id');
-    _loadReports();
-  }
-
-  Future<void> _grantAccess() async {
-    final token = const Uuid().v4();
-    await _sm.saveBeneficiaryToken(token);
+    final newRole = user.role == 'beneficiary' ? 'user' : 'beneficiary';
+    await _api.changeUserRole(user.id, newRole);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Acesso concedido! Token: $token')),
+      SnackBar(
+        content: Text(newRole == 'beneficiary'
+            ? '${user.name} agora é beneficiário.'
+            : 'Beneficiário de ${user.name} revogado.'),
+      ),
     );
+    _loadUsers();
   }
 
-  void _openEditBeneficiary(Beneficiary ben) {
-    Navigator.push<Beneficiary>(
-      context,
-      MaterialPageRoute(builder: (_) => BeneficiaryEditScreen(ben: ben)),
-    ).then((updated) {
-      if (updated != null) _loadBeneficiaries();
-    });
-  }
-
-  void _viewBeneficiaryDetails(Beneficiary ben) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => BeneficiaryDetailScreen(ben: ben)),
+  Future<void> _openEditUser(User user) async {
+    final nameCtrl = TextEditingController(text: user.name);
+    final emailCtrl = TextEditingController(text: user.email);
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Editar Usuário'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Nome')),
+            TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: 'E-mail')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Salvar')),
+        ],
+      ),
     );
+    if (result != true) return;
+    user.name = nameCtrl.text.trim();
+    user.email = emailCtrl.text.trim();
+    await _api.put('users/${user.id}', user.toMap());
+    _loadUsers();
   }
 
-  void _openCreateReport() {
-    Navigator.push<Report>(
-      context,
-      MaterialPageRoute(builder: (_) => ReportEditScreen()),
-    ).then((saved) {
-      if (saved != null) _loadReports();
-    });
+  Future<void> _exportCsv() async {
+    final rows = <List<String>>[ ['Título', 'Data', 'URL'] ];
+    for (var r in _reports) {
+      rows.add([r.title, DateHelper.formatDate(r.date), r.url]);
+    }
+    final csvString = const ListToCsvConverter().convert(rows);
+    await Share.share(csvString, subject: 'Relatórios.csv');
   }
 
-  void _openEditReport(Report rep) {
-    Navigator.push<Report>(
-      context,
-      MaterialPageRoute(builder: (_) => ReportEditScreen(report: rep)),
-    ).then((updated) {
-      if (updated != null) _loadReports();
-    });
+  Future<void> _exportPdf() async {
+    final pdf = pw.Document();
+    pdf.addPage(pw.Page(build: (_) {
+      final headers = ['Título', 'Data', 'URL'];
+      final data = _reports.map((r) => [r.title, DateHelper.formatDate(r.date), r.url]).toList();
+      return pw.Column(children: [
+        pw.Text('Relatórios', style: const pw.TextStyle(fontSize: 18)),
+        pw.SizedBox(height: 12),
+        pw.Table.fromTextArray(headers: headers, data: data),
+      ]);
+    }));
+    final bytes = await pdf.save();
+    await Printing.sharePdf(bytes: bytes, filename: 'relatorios.pdf');
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_isAdmin) {
-      return Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ); // Mostra loading até verificar o papel
-    }
+    final filteredUsers = _users.where((u) {
+      final q = _searchController.text.toLowerCase();
+      return u.name.toLowerCase().contains(q) || u.email.toLowerCase().contains(q);
+    }).toList();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Administração'),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Beneficiários'),
-            Tab(text: 'Pagamentos'),
-          ],
+          tabs: const [ Tab(text: 'Usuários'), Tab(text: 'Pagamentos') ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          // === ABA BENEFICIÁRIOS ===
-          _loadingBens
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-            itemCount: _bens.length,
-            itemBuilder: (_, i) {
-              final ben = _bens[i];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                child: ListTile(
-                  title: Text(ben.name),
-                  subtitle: Text(
-                    'Área: ${ben.areaPreserved}m²\n${ben.serviceDescription}',
-                  ),
-                  isThreeLine: true,
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.info, color: Colors.blue),
-                        tooltip: 'Detalhes',
-                        onPressed: () => _viewBeneficiaryDetails(ben),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.vpn_key, color: Colors.blue),
-                        tooltip: 'Conceder Acesso',
-                        onPressed: _grantAccess,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.green),
-                        tooltip: 'Editar',
-                        onPressed: () => _openEditBeneficiary(ben),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        tooltip: 'Deletar',
-                        onPressed: () => _deleteBeneficiary(ben.name),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-
-          // === ABA PAGAMENTOS ===
+          // === Usuarios com filtro e edição ===
           Column(
             children: [
               Padding(
                 padding: const EdgeInsets.all(8),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.add),
-                    label: const Text('Novo Pagamento'),
-                    onPressed: _openCreateReport,
+                child: TextField(
+                  controller: _searchController,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.search),
+                    labelText: 'Buscar usuários',
                   ),
+                  onChanged: (_) => setState(() {}),
                 ),
               ),
               Expanded(
-                child: _loadingReps
+                child: _loadingUsers
                     ? const Center(child: CircularProgressIndicator())
                     : ListView.builder(
-                  itemCount: _reps.length,
+                  itemCount: filteredUsers.length,
                   itemBuilder: (_, i) {
-                    final r = _reps[i];
+                    final user = filteredUsers[i];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                      child: ListTile(
+                        title: Text(user.name),
+                        subtitle: Text(user.email),
+                        isThreeLine: true,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              tooltip: 'Editar usuário',
+                              onPressed: () => _openEditUser(user),
+                            ),
+                            Text(user.role),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: Icon(
+                                user.role == 'beneficiary'
+                                    ? Icons.remove_circle
+                                    : Icons.check_circle,
+                                color: user.role == 'beneficiary' ? Colors.red : Colors.green,
+                              ),
+                              tooltip: user.role == 'beneficiary'
+                                  ? 'Revogar Beneficiário'
+                                  : 'Conceder Beneficiário',
+                              onPressed: () => _toggleBeneficiary(user),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          // === Pagamentos com exportação ===
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.file_download),
+                      label: const Text('Export CSV'),
+                      onPressed: _exportCsv,
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.picture_as_pdf),
+                      label: const Text('Export PDF'),
+                      onPressed: _exportPdf,
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: _loadingReports
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                  itemCount: _reports.length,
+                  itemBuilder: (_, i) {
+                    final r = _reports[i];
                     return ListTile(
                       leading: const Icon(Icons.payment),
                       title: Text(r.title),
@@ -228,19 +289,6 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
                         '${DateHelper.formatDate(r.date)}\n${r.url}',
                       ),
                       isThreeLine: true,
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.green),
-                            onPressed: () => _openEditReport(r),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _deleteReport(r.id),
-                          ),
-                        ],
-                      ),
                     );
                   },
                 ),

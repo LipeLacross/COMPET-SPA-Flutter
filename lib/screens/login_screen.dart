@@ -1,3 +1,4 @@
+// lib/screens/login_screen.dart
 import 'package:flutter/material.dart';
 import '../components/custom_input.dart';
 import '../components/custom_button.dart';
@@ -28,13 +29,32 @@ class _LoginScreenState extends State<LoginScreen> {
         _passController.text,
       );
 
-      // Salva o token e o papel (role) no SessionManager
-      await _sm.saveToken(result['token']);
-      await _sm.saveUserRole(result['role']);
-      await _sm.saveNickname(_identifierController.text.trim());
+      // Salva token e role
+      await _sm.saveToken(result['token'] as String);
+      await _sm.saveUserRole(result['role'] as String);
 
-      // Verifica o papel (role) e navega para a tela correta
-      if (result['role'] == 'admin') {
+      // Salva apelido (nickname) - usa o identificador se for apelido
+      final nickname = result['nickname'] as String? ?? _identifierController.text.trim();
+      await _sm.saveNickname(nickname);
+
+      // Se vier fullName e email no result, salva também
+      if (result.containsKey('fullName')) {
+        await _sm.saveFullName(result['fullName'] as String);
+      }
+      if (result.containsKey('email')) {
+        await _sm.saveEmail(result['email'] as String);
+      }
+
+      // Se vier telefone/biografia do backend, salve-os assim:
+      if (result.containsKey('phone')) {
+        await _sm.savePhone(result['phone'] as String);
+      }
+      if (result.containsKey('biography')) {
+        await _sm.saveBiography(result['biography'] as String);
+      }
+
+      // Navegação conforme papel
+      if (result['role'] == 'usuario ') {
         Navigator.pushReplacementNamed(context, '/admin');
       } else {
         Navigator.pushReplacementNamed(context, '/home');

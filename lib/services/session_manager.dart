@@ -1,31 +1,28 @@
-//sessions manager_dart
+// lib/services/session_manager.dart
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SessionManager {
-  static const _tokenKey             = 'auth_token';
-  static const _roleKey              = 'user_role';
-  static const _nickKey              = 'user_nickname';
-  static const _emailKey             = 'user_email';
-  static const _phoneKey             = 'user_phone';
-  static const _avatarKey            = 'user_avatar_path';
-  static const _fullNameKey          = 'user_full_name';  // Novo: para nome completo
-  static const _biographyKey         = 'user_biography';  // Novo: para biografia
-  static const _themeKey = 'user_theme';  // Nova chave para o tema (escuro/claro)
+  static const _tokenKey = 'auth_token';
+  static const _roleKey = 'user_role';
+  static const _nickKey = 'user_nickname';
+  static const _emailKey = 'user_email';
+  static const _phoneKey = 'user_phone';
+  static const _avatarKey = 'user_avatar_path';
+  static const _fullNameKey = 'user_full_name';  // Nome completo
+  static const _biographyKey = 'user_biography';  // Biografia
+  static const _themeKey = 'user_theme';  // Tema (escuro/claro)
 
-  // Método para salvar a preferência de tema
+  /// Salva a preferência de tema
   Future<void> saveTheme(bool isDarkMode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_themeKey, isDarkMode);
   }
 
-  // Método para recuperar a preferência de tema
+  /// Recupera a preferência de tema
   Future<bool> getTheme() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_themeKey) ?? false;  // Retorna `false` por padrão (modo claro)
+    return prefs.getBool(_themeKey) ?? false;
   }
-
-  // NOVO: chave para o token de beneficiário
-  static const _beneficiaryTokenKey  = 'beneficiary_token';
 
   /// Salva o JWT
   Future<void> saveToken(String token) async {
@@ -99,10 +96,6 @@ class SessionManager {
     return prefs.getString(_avatarKey);
   }
 
-  // ============================
-  // Métodos para Nome Completo e Biografia
-  // ============================
-
   /// Salva o nome completo do usuário
   Future<void> saveFullName(String fullName) async {
     final prefs = await SharedPreferences.getInstance();
@@ -127,29 +120,7 @@ class SessionManager {
     return prefs.getString(_biographyKey);
   }
 
-  // ============================
-  // Métodos para Beneficiário
-  // ============================
-
-  /// Salva o token de beneficiário (concede acesso permanente)
-  Future<void> saveBeneficiaryToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_beneficiaryTokenKey, token);
-  }
-
-  /// Recupera o token de beneficiário (ou null se não existir)
-  Future<String?> getBeneficiaryToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_beneficiaryTokenKey);
-  }
-
-  /// Limpa (revoga) o token de beneficiário
-  Future<void> clearBeneficiaryToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_beneficiaryTokenKey);
-  }
-
-  /// Limpa todas as informações de sessão, incluindo o token de beneficiário
+  /// Limpa todas as informações de sessão (logout)
   Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
@@ -158,6 +129,8 @@ class SessionManager {
     await prefs.remove(_emailKey);
     await prefs.remove(_phoneKey);
     await prefs.remove(_avatarKey);
-    await prefs.remove(_beneficiaryTokenKey);
+    await prefs.remove(_fullNameKey);
+    await prefs.remove(_biographyKey);
+    await prefs.remove(_themeKey);
   }
 }

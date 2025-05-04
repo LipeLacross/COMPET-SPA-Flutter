@@ -1,5 +1,4 @@
 // lib/screens/beneficiary_screen.dart
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -13,14 +12,14 @@ import '../services/geolocation_service.dart';
 import '../services/local_storage_service.dart';
 import '../services/report_service.dart';
 import '../services/notification_service.dart';
-import '../services/session_manager.dart'; // import para controle de token
+import '../services/session_manager.dart';
 
 import '../models/offline_record.dart';
 import '../models/report.dart';
 import '../utils/date_helper.dart';
 
 class BeneficiaryScreen extends StatefulWidget {
-  const BeneficiaryScreen({super.key});
+  const BeneficiaryScreen({Key? key}) : super(key: key);
 
   @override
   State<BeneficiaryScreen> createState() => _BeneficiaryScreenState();
@@ -29,46 +28,41 @@ class BeneficiaryScreen extends StatefulWidget {
 class _BeneficiaryScreenState extends State<BeneficiaryScreen>
     with SingleTickerProviderStateMixin {
   final SessionManager _sm = SessionManager();
-  late final TabController _tabController;
+  TabController? _tabController;
 
   // Controllers para Área Coberta
-  final _areaTotalController       = TextEditingController();
-  final _areaAppController         = TextEditingController();
+  final _areaTotalController = TextEditingController();
+  final _areaAppController = TextEditingController();
   final _descriptionAreaController = TextEditingController();
-  final _addressController         = TextEditingController();
-  final _forestTypeController      = TextEditingController();
-  final _animalsController         = TextEditingController();
-  final _humanResourcesController  = TextEditingController();
-  final _otherResourcesController  = TextEditingController();
+  final _addressController = TextEditingController();
+  final _forestTypeController = TextEditingController();
+  final _animalsController = TextEditingController();
+  final _humanResourcesController = TextEditingController();
+  final _otherResourcesController = TextEditingController();
 
   // Controller para Atividades
   final _descController = TextEditingController();
 
   // Serviços
-  final _geoService     = GeolocationService();
+  final _geoService = GeolocationService();
   final _storageService = LocalStorageService();
-  final _reportService  = ReportService();
-  final _notifService   = NotificationService();
+  final _reportService = ReportService();
+  final _notifService = NotificationService();
 
-  File?     _pickedImage;
+  File? _pickedImage;
   Position? _currentPos;
-  List<OfflineRecord> _records  = [];
-  List<Report>       _payments = [];
+  List<OfflineRecord> _records = [];
+  List<Report> _payments = [];
 
   @override
   void initState() {
     super.initState();
-    _checkAccess(); // valida token antes de inicializar UI
-    _tabController = TabController(length: 3, vsync: this);
-    _loadRecords();
-    _loadPayments();
-    _notifService.init();
+    _checkAccess();
   }
 
   Future<void> _checkAccess() async {
-    final token = await _sm.getBeneficiaryToken();
-    if (token == null) {
-      // se não autorizado, exibe alerta e redireciona
+    final role = await _sm.getUserRole();
+    if (role != 'beneficiary') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showDialog<void>(
           context: context,
@@ -88,6 +82,12 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
           ),
         );
       });
+    } else {
+      _tabController = TabController(length: 3, vsync: this);
+      _loadRecords();
+      _loadPayments();
+      _notifService.init();
+      setState(() {});
     }
   }
 
@@ -126,15 +126,14 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
   }
 
   Future<void> _showEditAreaDialog(OfflineRecord record) async {
-    // preenche campos existentes
-    _areaTotalController.text       = record.payload['areaTotal'].toString();
-    _areaAppController.text         = record.payload['areaApp'].toString();
+    _areaTotalController.text = record.payload['areaTotal'].toString();
+    _areaAppController.text = record.payload['areaApp'].toString();
     _descriptionAreaController.text = record.payload['description'];
-    _addressController.text         = record.payload['address'];
-    _forestTypeController.text      = record.payload['forestType'];
-    _animalsController.text         = record.payload['animals'];
-    _humanResourcesController.text  = record.payload['humanResources'] ?? '';
-    _otherResourcesController.text  = record.payload['otherResources'] ?? '';
+    _addressController.text = record.payload['address'];
+    _forestTypeController.text = record.payload['forestType'];
+    _animalsController.text = record.payload['animals'];
+    _humanResourcesController.text = record.payload['humanResources'] ?? '';
+    _otherResourcesController.text = record.payload['otherResources'] ?? '';
 
     final ok = await showDialog<bool>(
       context: context,
@@ -155,9 +154,9 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
               const SizedBox(height: 8),
               CustomInput(label: 'Animais na Região', controller: _animalsController),
               const SizedBox(height: 8),
-              CustomInput(label: 'Recursos Humanos na Área', controller: _humanResourcesController),
+              CustomInput(label: 'Recursos Humanos', controller: _humanResourcesController),
               const SizedBox(height: 8),
-              CustomInput(label: 'Outros Recursos (opcional)', controller: _otherResourcesController),
+              CustomInput(label: 'Outros Recursos', controller: _otherResourcesController),
             ],
           ),
         ),
@@ -216,8 +215,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
       );
       return;
     }
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.camera);
+    final picked = await ImagePicker().pickImage(source: ImageSource.camera);
     if (picked == null) return;
     _pickedImage = File(picked.path);
     _currentPos = await _geoService.getUserLocation();
@@ -243,15 +241,15 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
 
   int get _weeklyActivitiesCount {
     final weekAgo = DateTime.now().subtract(const Duration(days: 7));
-    return _records
-        .where((r) => r.payload['type'] == 'activity'
-        && DateTime.parse(r.payload['date']).isAfter(weekAgo))
-        .length;
+    return _records.where((r) {
+      final d = DateTime.parse(r.payload['date']);
+      return r.payload['type'] == 'activity' && d.isAfter(weekAgo);
+    }).length;
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController?.dispose();
     _areaTotalController.dispose();
     _areaAppController.dispose();
     _descriptionAreaController.dispose();
@@ -266,11 +264,16 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Enquanto não autorizado ou controlador não inicializado, mostra loading
+    if (_tabController == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Área do Beneficiário'),
         bottom: TabBar(
-          controller: _tabController,
+          controller: _tabController!,
           tabs: const [
             Tab(text: 'Área Coberta'),
             Tab(text: 'Atividades'),
@@ -279,7 +282,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
         ),
       ),
       body: TabBarView(
-        controller: _tabController,
+        controller: _tabController!,
         children: [
           // === Área Coberta ===
           Padding(
@@ -297,10 +300,6 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
                 CustomInput(label: 'Tipo de Mata', controller: _forestTypeController),
                 const SizedBox(height: 12),
                 CustomInput(label: 'Animais na Região', controller: _animalsController),
-                const SizedBox(height: 12),
-                CustomInput(label: 'Recursos Humanos na Área', controller: _humanResourcesController),
-                const SizedBox(height: 12),
-                CustomInput(label: 'Outros Recursos (opcional)', controller: _otherResourcesController),
                 const SizedBox(height: 20),
                 CustomButton(label: 'Registrar Área', onPressed: _saveArea),
                 const Divider(height: 40),
@@ -330,7 +329,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
                     ),
                   ),
                 ))
-                    ,
+                    .toList(),
                 const SizedBox(height: 20),
                 WhatsAppButton(
                   phone: '5574981256120',
@@ -356,7 +355,8 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Você registrou apenas $_weeklyActivitiesCount atividades na última semana. O mínimo exigido é 3.',
+                              'Você registrou apenas $_weeklyActivitiesCount atividades na última semana. '
+                                  'O mínimo exigido é 3.',
                               style: TextStyle(color: Colors.red.shade800),
                             ),
                           ),
@@ -373,17 +373,15 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
                   child: ListView(
                     children: _records
                         .where((r) => r.payload['type'] == 'activity')
-                        .map((r) {
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: ListTile(
-                          leading: Image.file(File(r.payload['imagePath']), width: 50, fit: BoxFit.cover),
-                          title: Text(r.payload['description']),
-                          subtitle: Text('Em ${r.payload['date']}'),
-                          trailing: const Icon(Icons.location_on, color: Colors.green),
-                        ),
-                      );
-                    })
+                        .map((r) => Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ListTile(
+                        leading: Image.file(File(r.payload['imagePath']), width: 50, fit: BoxFit.cover),
+                        title: Text(r.payload['description']),
+                        subtitle: Text('Em ${r.payload['date']}'),
+                        trailing: const Icon(Icons.location_on, color: Colors.green),
+                      ),
+                    ))
                         .toList(),
                   ),
                 ),
@@ -401,7 +399,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
                 return ListTile(
                   leading: const Icon(Icons.payment_outlined, color: Colors.green),
                   title: Text(p.title),
-                  subtitle: Text('${DateHelper.formatDate(p.date)} • Valor: R\$${p.id}'),
+                  subtitle: Text('${DateHelper.formatDate(p.date)}'),
                 );
               }).toList(),
             ),

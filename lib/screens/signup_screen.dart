@@ -73,7 +73,7 @@ class _SignupScreenState extends State<SignupScreen> {
         password: _passwordController.text,
         cpf: cpf,
         dateOfBirth: dob,
-        role: role, // Role atribuído
+        role: role,
       );
 
       // salva apelido em sessão
