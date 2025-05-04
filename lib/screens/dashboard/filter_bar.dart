@@ -1,22 +1,25 @@
-// lib/screens/dashboard/filter_bar.dart
 import 'package:flutter/material.dart';
 
 class FilterBar extends StatelessWidget {
   final String? searchName;
   final String? selectedType;
   final DateTimeRange? selectedPeriod;
+  final bool showOnlyBeneficiaries;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<String?> onTypeChanged;
   final ValueChanged<DateTimeRange?> onPeriodChanged;
+  final ValueChanged<bool> onBeneficiaryToggle;
 
   const FilterBar({
     super.key,
     required this.searchName,
     required this.selectedType,
     required this.selectedPeriod,
+    this.showOnlyBeneficiaries = false,
     required this.onSearchChanged,
     required this.onTypeChanged,
     required this.onPeriodChanged,
+    required this.onBeneficiaryToggle,
   });
 
   @override
@@ -58,6 +61,16 @@ class FilterBar extends StatelessWidget {
               );
               onPeriodChanged(pr);
             },
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Só beneficiários'),
+              Switch(
+                value: showOnlyBeneficiaries,
+                onChanged: onBeneficiaryToggle,
+              ),
+            ],
           ),
         ],
       ),

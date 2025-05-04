@@ -12,7 +12,6 @@ import 'screens/home_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/activities_screen.dart';
 import 'screens/beneficiary_screen.dart';
-import 'screens/map_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/admin_screen.dart';
 
@@ -27,7 +26,7 @@ void main() async {
 
 class MyApp extends StatefulWidget {
   final bool initialDarkMode;
-  const MyApp({super.key, required this.initialDarkMode});
+  const MyApp({super.key, this.initialDarkMode = false});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -59,7 +58,6 @@ class _MyAppState extends State<MyApp> {
         '/dashboard':       (_) => const DashboardScreen(),
         '/activities':      (_) => const ActivitiesScreen(),
         '/beneficiary':     (_) => const BeneficiaryScreen(),
-        '/map':             (_) => const MapScreen(),
         // Aqui: ProfileScreen recebe a função para mudar tema
         '/profile':         (_) => ProfileScreen(onThemeChanged: _updateTheme),
         '/admin':           (_) => const AdminScreen(),

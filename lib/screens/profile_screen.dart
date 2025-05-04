@@ -9,7 +9,7 @@ import '../services/session_manager.dart';
 class ProfileScreen extends StatefulWidget {
   /// Callback para notificar a mudança de tema no topo (MyApp)
   final ValueChanged<bool> onThemeChanged;
-  const ProfileScreen({Key? key, required this.onThemeChanged}) : super(key: key);
+  const ProfileScreen({super.key, required this.onThemeChanged});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();

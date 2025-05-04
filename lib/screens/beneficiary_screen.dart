@@ -19,7 +19,7 @@ import '../models/report.dart';
 import '../utils/date_helper.dart';
 
 class BeneficiaryScreen extends StatefulWidget {
-  const BeneficiaryScreen({Key? key}) : super(key: key);
+  const BeneficiaryScreen({super.key});
 
   @override
   State<BeneficiaryScreen> createState() => _BeneficiaryScreenState();
@@ -329,7 +329,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
                     ),
                   ),
                 ))
-                    .toList(),
+                    ,
                 const SizedBox(height: 20),
                 WhatsAppButton(
                   phone: '5574981256120',
@@ -399,7 +399,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
                 return ListTile(
                   leading: const Icon(Icons.payment_outlined, color: Colors.green),
                   title: Text(p.title),
-                  subtitle: Text('${DateHelper.formatDate(p.date)}'),
+                  subtitle: Text(DateHelper.formatDate(p.date)),
                 );
               }).toList(),
             ),

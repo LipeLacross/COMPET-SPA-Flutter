@@ -1,17 +1,13 @@
-7. ver troca de tema escuro e claro
-
-9. migrar o projeto para uma nova versão
-
-10. ver ícone do app
-
-11. ver a tela de admin e suas funções, em vez de dar um token pro usario se tornar beneficairo, o adminitrador em sua tela de administração
-tem o controle de todos os usuarios, e pode dar autoriazação a cada um deles para serem um beneficiario, aí eles teriam acesso a utras coisas também talvez, pro context do projeto
-
 12. o dashboard precisa de ser bem trabalhado, tem o interssante seria ter acesso a mapas de beneficiaries interativo, o flutter não tem bibs como Nominatim, OpenStreetMap, GeoPy, GeoPandas, Folium: Para processamento de dados geoespaciais e visualização de mapas interativos.
 
 podemos usar o GeoServer SICAR: O GeoServer pode ser utilizado para fornecer dados geoespaciais sobre os imóveis rurais cadastrados no Cadastro Ambiental Rural (CAR), com informações sobre a localização, situação cadastral e a representação geoespacial dos imóveis.
 
+ao interagir com o ponto mapa que seria um beneficiário(o usuário poderia ver as informações daquele beneficinario a condição)
+
+lembrando que um beneficiário é um usuario mas nem todo usuario é beneficiario(no caso não teria acesso a tela de beneficiario)
+
 pensei em ter um servidor em fastapi para pegar esses processos para entregar no aplicativo flutter
 
+ver como é possível usar o python no fluter para plotar mapas, nos casos necessaries, usa um python em um servidor por fora? um flask um fastapi? pro futtter usar?
 
-5. ver como é possível usar o geopandas no fluter para plotar mapas, nos casos necessaries, usa um python em um servidor por fora? um flask um fastapi? por lfuttter usar?
+

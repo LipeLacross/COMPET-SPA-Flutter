@@ -17,12 +17,12 @@ dependencies:
     sdk: flutter  # traz intl 0.19.0
 
   # localização e mapas
-  geolocator: ^9.0.0
+  geolocator: ^14.0.0
   google_maps_flutter: ^2.3.0
 
   # gráficos e imagens
   fl_chart: ^0.71.0
-  image_picker: ^0.8.7+5
+  image_picker: ^1.1.2
 
   # CSV, PDF e compartilhamento
   csv: ^6.0.0                # compatível com easy_localization_generator :contentReference[oaicite:0]{index=0}
@@ -46,7 +46,9 @@ dependencies:
 
   # internacionalização / formatação de data
   intl: ^0.19.0               # encaixa com flutter_localizations :contentReference[oaicite:1]{index=1}
-
+  flutter_map: ^7.0.2
+  flutter_map_geojson: ^1.0.8
+  latlong2: any
   # Firebase e notificações locais
   firebase_core: ^3.13.0
   firebase_messaging: ^15.2.5
