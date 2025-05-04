@@ -1,4 +1,5 @@
-12. o dashboard precisa de ser bem trabalhado, tem o interssante seria ter acesso a mapas de beneficiaries interativo, o flutter não tem bibs como Nominatim, OpenStreetMap, GeoPy, GeoPandas, Folium: Para processamento de dados geoespaciais e visualização de mapas interativos.
+
+12. o dashboard precisa de ser bem trabalhado, todo usuario teria acesso a mapas de beneficiaries interativo, o flutter não tem bibs como Nominatim, OpenStreetMap, GeoPy, GeoPandas, Folium: Para processamento de dados geoespaciais e visualização de mapas interativos.Eu queira um mapa interativo.
 
 podemos usar o GeoServer SICAR: O GeoServer pode ser utilizado para fornecer dados geoespaciais sobre os imóveis rurais cadastrados no Cadastro Ambiental Rural (CAR), com informações sobre a localização, situação cadastral e a representação geoespacial dos imóveis.
 
@@ -8,6 +9,33 @@ lembrando que um beneficiário é um usuario mas nem todo usuario é beneficiari
 
 pensei em ter um servidor em fastapi para pegar esses processos para entregar no aplicativo flutter
 
-ver como é possível usar o python no fluter para plotar mapas, nos casos necessaries, usa um python em um servidor por fora? um flask um fastapi? pro futtter usar?
+ver como é possível usar o python no fluter para plotar mapas, nos casos necessaries, usa um python em um servidor por fora? um flask um fastapi? pro futtter usar? e uqueria que de alguma forma desse para acessar uam foto do mapa cartografico da região de cada beneficiario nesse dashboard usando as infarmções que os beneficarios inserem em sua tela de benficiario
 
 
+GeoServer SICAR: O GeoServer pode ser utilizado para fornecer dados geoespaciais sobre os imóveis rurais cadastrados no Cadastro Ambiental Rural (CAR), com informações sobre a localização, situação cadastral e a representação geoespacial dos imóveis.
+
+Além disso, bibliotecas como ipyleaflet podem ser utilizadas para criar mapas interativos com informações sobre os pontos no mapa, facilitando a visualização das atividades de conservação.
+
+GeoServer SICAR
+O GeoServer SICAR é uma solução para compartilhar dados espaciais, conforme as diretrizes do Open Geospatial Consortium (OGC), e pode ser integrado ao projeto para acessar informações sobre o Cadastro Ambiental Rural (CAR) dos imóveis rurais. Ele permite a visualização e o download de dados, como a localização, a situação cadastral e a representação geoespacial dos imóveis registrados no CAR.
+
+Atributos do GeoServer SICAR:
+cod_estado: Unidade da Federação onde o cadastro se localiza.
+
+municipio: Município do cadastro.
+
+num_area: Área bruta do imóvel rural em hectares.
+
+cod_imovel: Número de inscrição no Cadastro Ambiental Rural (CAR).
+
+ind_status: Situação do cadastro no CAR (AT - Ativo, PE - Pendente, SU - Suspenso, CA - Cancelado).
+
+des_condic: Condição do cadastro no fluxo de análise.
+
+ind_tipo: Tipo do imóvel rural (IRU - Imóvel Rural, AST - Assentamentos de Reforma Agrária, PCT - Território Tradicional).
+
+mod_fiscal: Número de módulos fiscais do imóvel rural.
+
+nom_tema: Nome do tema que compõe o cadastro (Área de Preservação Permanente, Reserva Legal, etc.).
+
+Link para o GeoServer SICAR: https://geoserver.car.gov.br/geoserver/sicar/wfs

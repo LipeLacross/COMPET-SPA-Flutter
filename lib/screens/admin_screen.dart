@@ -189,6 +189,12 @@ class _AdminScreenState extends State<AdminScreen>
     await Printing.sharePdf(bytes: bytes, filename: 'relatorios.pdf');
   }
 
+  Future<void> _logout() async {
+    await _sm.clear();
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -207,6 +213,20 @@ class _AdminScreenState extends State<AdminScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Administração'),
+        actions: [
+          // Dashboard
+          IconButton(
+            icon: const Icon(Icons.dashboard_outlined),
+            tooltip: 'Dashboard',
+            onPressed: () => Navigator.pushNamed(context, '/dashboard'),
+          ),
+          // Logout
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: _logout,
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -253,8 +273,7 @@ class _AdminScreenState extends State<AdminScreen>
                               icon: const Icon(Icons.edit,
                                   color: Colors.blue),
                               tooltip: 'Editar usuário',
-                              onPressed: () =>
-                                  _openEditUser(user),
+                              onPressed: () => _openEditUser(user),
                             ),
                             Text(user.role),
                             const SizedBox(width: 8),
