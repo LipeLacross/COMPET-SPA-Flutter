@@ -7,7 +7,7 @@ class MapView extends StatelessWidget {
   final Completer<GoogleMapController> controller;
   final Set<Marker> markers;
 
-  const MapView({Key? key, required this.controller, required this.markers}) : super(key: key);
+  const MapView({super.key, required this.controller, required this.markers});
 
   @override
   Widget build(BuildContext context) {

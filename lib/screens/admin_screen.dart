@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';  // para gerar token UUID
 
-import '../components/custom_input.dart';
-import '../components/custom_button.dart';
 import '../screens/beneficiary_edit_screen.dart';  // tela de edição
 import '../screens/beneficiary_detail_screen.dart'; // tela de detalhes
 import '../screens/report_edit_screen.dart';      // tela de edição/criação de pagamentos
@@ -14,7 +12,7 @@ import '../models/report.dart';
 import '../utils/date_helper.dart';
 
 class AdminScreen extends StatefulWidget {
-  const AdminScreen({Key? key}) : super(key: key);
+  const AdminScreen({super.key});
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();

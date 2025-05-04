@@ -12,7 +12,7 @@ class CustomInput extends StatelessWidget {
   final bool readOnly;  // Added readOnly parameter
 
   const CustomInput({
-    Key? key,
+    super.key,
     required this.label,
     required this.controller,
     this.obscureText = false,
@@ -20,7 +20,7 @@ class CustomInput extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.hintText,
     this.readOnly = false,  // Default to false
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -5,7 +5,7 @@ class ExportButtons extends StatelessWidget {
   final VoidCallback onCsv;
   final VoidCallback onPdf;
 
-  const ExportButtons({Key? key, required this.onCsv, required this.onPdf}) : super(key: key);
+  const ExportButtons({super.key, required this.onCsv, required this.onPdf});
 
   @override
   Widget build(BuildContext context) {

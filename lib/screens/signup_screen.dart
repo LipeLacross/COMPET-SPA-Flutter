@@ -7,7 +7,7 @@ import '../services/session_manager.dart';
 import 'package:intl/intl.dart';
 
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({Key? key}) : super(key: key);
+  const SignupScreen({super.key});
 
   @override
   _SignupScreenState createState() => _SignupScreenState();

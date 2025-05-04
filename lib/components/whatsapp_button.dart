@@ -6,10 +6,10 @@ class WhatsAppButton extends StatelessWidget {
   final String message; // mensagem inicial opcional
 
   const WhatsAppButton({
-    Key? key,
+    super.key,
     required this.phone,
     this.message = '',
-  }) : super(key: key);
+  });
 
   Future<void> _openWhatsApp(BuildContext context) async {
     final uri = Uri.parse(

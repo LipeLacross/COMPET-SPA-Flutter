@@ -21,7 +21,7 @@ import 'map_view.dart';
 import 'export_buttons.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -133,10 +133,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           pw.Text('Relatório de Monitoramento', style: pw.TextStyle(fontSize: 18)),
           pw.SizedBox(height: 12),
-          pw.Text('Período: ' +
-              (_selectedPeriod != null
+          pw.Text('Período: ${_selectedPeriod != null
                   ? '${DateHelper.formatDate(_selectedPeriod!.start)} – ${DateHelper.formatDate(_selectedPeriod!.end)}'
-                  : 'Todos')),
+                  : 'Todos'}'),
           pw.SizedBox(height: 8),
           pw.Text('Tipo: ${_selectedType ?? 'Todos'}'),
           pw.SizedBox(height: 12),

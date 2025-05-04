@@ -8,10 +8,10 @@ class SummaryCards extends StatelessWidget {
   final List<Report> payments;
 
   const SummaryCards({
-    Key? key,
+    super.key,
     required this.records,
     required this.payments,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

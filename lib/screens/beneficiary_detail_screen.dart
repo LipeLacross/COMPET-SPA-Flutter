@@ -6,7 +6,7 @@ import '../utils/date_helper.dart';
 
 class BeneficiaryDetailScreen extends StatelessWidget {
   final Beneficiary ben;
-  const BeneficiaryDetailScreen({Key? key, required this.ben}) : super(key: key);
+  const BeneficiaryDetailScreen({super.key, required this.ben});
 
   @override
   Widget build(BuildContext context) {

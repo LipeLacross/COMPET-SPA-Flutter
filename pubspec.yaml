@@ -59,6 +59,7 @@ dependencies:
   # ícones adicionais (WhatsApp)
   material_design_icons_flutter: ^7.0.7296
 
+  uuid: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -75,7 +76,10 @@ flutter_local_notifications:
     linux: false  # Desabilite suporte para Linux, caso não esteja usando
 
 
-flutter_icons:
-  android: true
-  ios: true
-  image_path: "assets/icon/app_icon.png"  # Caminho do seu ícone
+flutter_launcher_icons:
+  android: true       # gera ícones pro Android
+  ios: true           # gera ícones pro iOS
+  windows:
+    generate: false         # DESATIVA geração de ícone no Windows
+  remove_alpha_ios: true   # remove canal alfa (requisito App Store)
+  image_path: "assets/icon/app_icon.png"

@@ -7,7 +7,7 @@ import '../../models/offline_record.dart';
 class ActivityChart extends StatelessWidget {
   final List<OfflineRecord> records;
 
-  const ActivityChart({Key? key, required this.records}) : super(key: key);
+  const ActivityChart({super.key, required this.records});
 
   @override
   Widget build(BuildContext context) {

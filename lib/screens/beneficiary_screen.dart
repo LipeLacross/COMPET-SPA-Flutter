@@ -20,7 +20,7 @@ import '../models/report.dart';
 import '../utils/date_helper.dart';
 
 class BeneficiaryScreen extends StatefulWidget {
-  const BeneficiaryScreen({Key? key}) : super(key: key);
+  const BeneficiaryScreen({super.key});
 
   @override
   State<BeneficiaryScreen> createState() => _BeneficiaryScreenState();
@@ -330,7 +330,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
                     ),
                   ),
                 ))
-                    .toList(),
+                    ,
                 const SizedBox(height: 20),
                 WhatsAppButton(
                   phone: '5574981256120',

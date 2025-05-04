@@ -7,7 +7,7 @@ import '../models/beneficiary.dart';
 
 class BeneficiaryEditScreen extends StatefulWidget {
   final Beneficiary ben;
-  const BeneficiaryEditScreen({Key? key, required this.ben}) : super(key: key);
+  const BeneficiaryEditScreen({super.key, required this.ben});
 
   @override
   State<BeneficiaryEditScreen> createState() => _BeneficiaryEditScreenState();

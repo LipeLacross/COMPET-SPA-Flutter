@@ -10,14 +10,14 @@ class FilterBar extends StatelessWidget {
   final ValueChanged<DateTimeRange?> onPeriodChanged;
 
   const FilterBar({
-    Key? key,
+    super.key,
     required this.searchName,
     required this.selectedType,
     required this.selectedPeriod,
     required this.onSearchChanged,
     required this.onTypeChanged,
     required this.onPeriodChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

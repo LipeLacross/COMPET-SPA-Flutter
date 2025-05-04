@@ -7,7 +7,7 @@ import '../models/report.dart';
 
 class ReportEditScreen extends StatefulWidget {
   final Report? report; // se null, criamos novo
-  const ReportEditScreen({Key? key, this.report}) : super(key: key);
+  const ReportEditScreen({super.key, this.report});
 
   @override
   State<ReportEditScreen> createState() => _ReportEditScreenState();

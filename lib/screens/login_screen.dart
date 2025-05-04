@@ -3,8 +3,6 @@ import '../components/custom_input.dart';
 import '../components/custom_button.dart';
 import '../services/auth_service.dart';
 import '../services/session_manager.dart';
-import 'home_screen.dart';
-import 'admin_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
