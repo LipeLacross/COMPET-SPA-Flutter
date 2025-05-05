@@ -2,16 +2,10 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:csv/csv.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import '../../models/offline_record.dart';
 import '../../services/local_storage_service.dart';
 import '../../services/report_service.dart';
-import '../../utils/date_helper.dart';
 import 'map_view.dart';
-import 'filter_bar.dart';
 import 'summary_cards.dart';
 import 'activity_chart.dart';
 
@@ -29,7 +23,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<OfflineRecord> _allRecords = [];
   List<OfflineRecord> _filteredRecords = [];
   int _beneficiaryCount = 0;
-  bool _showOnlyBeneficiaries = false;
 
   String? _searchText;
   DateTimeRange? _selectedPeriod;
@@ -87,48 +80,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }).toList();
   }
 
-  List<List<dynamic>> _buildCsvRows() => [
-    ['Tipo', 'Descrição', 'Data', 'Valor'],
-    ..._filteredRecords.map((r) => [
-      r.payload['type'],
-      r.payload['description'] ?? '',
-      r.payload['date'],
-      r.payload['areaPreserved'] ?? '',
-    ]),
-  ];
-
-  Future<void> _exportCsv() async {
-    final rows = _buildCsvRows();
-    final csv = const ListToCsvConverter().convert(rows);
-    await Share.share(csv, subject: 'dashboard.csv');
-  }
-
-  Future<void> _exportPdf() async {
-    final rows = _buildCsvRows();
-    final data =
-    rows.skip(1).map((r) => r.map((e) => e.toString()).toList()).toList();
-    final doc = pw.Document();
-    doc.addPage(pw.Page(build: (_) {
-      return pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Text('Relatório de Monitoramento',
-              style: pw.TextStyle(fontSize: 18)),
-          pw.SizedBox(height: 8),
-          pw.Text(_selectedPeriod != null
-              ? 'Período: ${DateHelper.formatDate(_selectedPeriod!.start)} – ${DateHelper.formatDate(_selectedPeriod!.end)}'
-              : 'Período: Todos'),
-          pw.SizedBox(height: 12),
-          pw.Table.fromTextArray(
-            headers: rows.first.map((h) => h.toString()).toList(),
-            data: data,
-          ),
-        ],
-      );
-    }));
-    await Printing.sharePdf(bytes: await doc.save(), filename: 'dashboard.pdf');
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,38 +91,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onPressed: _reloadAll,
             tooltip: 'Recarregar',
           ),
-          IconButton(
-            icon: const Icon(Icons.file_download),
-            onPressed: _exportCsv,
-            tooltip: 'Export CSV',
-          ),
-          IconButton(
-            icon: const Icon(Icons.picture_as_pdf),
-            onPressed: _exportPdf,
-            tooltip: 'Export PDF',
-          ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: _reloadAll,
         child: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: FilterBar(
-                  searchText: _searchText,
-                  selectedPeriod: _selectedPeriod,
-                  showOnlyBeneficiaries: _showOnlyBeneficiaries,
-                  onSearchChanged: (v) =>
-                      setState(() { _searchText = v; _applyFilters(); }),
-                  onPeriodChanged: (pr) =>
-                      setState(() { _selectedPeriod = pr; _applyFilters(); }),
-                  onBeneficiaryToggle: (val) =>
-                      setState(() => _showOnlyBeneficiaries = val),
-                ),
-              ),
-            ),
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               sliver: SliverToBoxAdapter(
@@ -190,7 +115,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(8),
-                child: MapView(showOnlyBeneficiaries: _showOnlyBeneficiaries),
+                child: MapView(showOnlyBeneficiaries: false),
               ),
             ),
           ],

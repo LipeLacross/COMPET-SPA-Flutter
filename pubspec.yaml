@@ -26,7 +26,7 @@ dependencies:
 
   # CSV, PDF e compartilhamento
   csv: ^6.0.0                # compatível com easy_localization_generator :contentReference[oaicite:0]{index=0}
-  pdf: ^3.8.1
+  pdf: ^3.10.4
   printing: ^5.12.0
   share_plus: ^11.0.0
 
