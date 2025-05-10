@@ -72,6 +72,19 @@ class _ActivityChartState extends State<ActivityChart> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Título explicativo
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            'Quantidade de Atividades Durante o Mês',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).primaryColor,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
         // Seletor de mês
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

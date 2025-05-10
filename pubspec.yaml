@@ -1,7 +1,6 @@
 name: competspa
 description: "Sistema de Pagamento por Serviços Ambientais"
 publish_to: 'none'
-
 version: 1.0.0+1
 
 environment:
@@ -14,69 +13,82 @@ dependencies:
   # Flutter e ícones
   cupertino_icons: ^1.0.8
   flutter_localizations:
-    sdk: flutter  # traz intl 0.19.0
+    sdk: flutter  # inclui intl 0.19.0 para suporte a internacionalização
 
-  # localização e mapas
-  geolocator: ^14.0.0
-  google_maps_flutter: ^2.3.0
+  # Localização e Mapas
+  geolocator: ^14.0.0  # Para obter a localização geográfica
+  google_maps_flutter: ^2.3.0  # Para integrar o Google Maps no app
 
-  # gráficos e imagens
-  fl_chart: ^0.71.0
-  image_picker: ^1.1.2
+  # Gráficos e Imagens
+  fl_chart: ^0.71.0  # Para gráficos interativos
+  image_picker: ^1.1.2  # Para selecionar ou tirar fotos
 
-  # CSV, PDF e compartilhamento
-  csv: ^6.0.0                # compatível com easy_localization_generator :contentReference[oaicite:0]{index=0}
-  pdf: ^3.10.4
-  printing: ^5.12.0
-  share_plus: ^11.0.0
+  # CSV, PDF e Compartilhamento
+  csv: ^6.0.0  # Para manipulação de arquivos CSV
+  pdf: ^3.10.4  # Para gerar documentos PDF
+  printing: ^5.12.0  # Para imprimir documentos
+  share_plus: ^11.0.0  # Para compartilhar arquivos e conteúdo
+  webview_flutter: ^4.2.2  # Para exibir conteúdo web dentro do aplicativo
+  exif: ^3.3.0  # Para manipulação de metadados EXIF em imagens
+  native_exif:
+    git:
+      url: https://github.com/cloudacy/native_exif.git
 
-  # armazenamento local
-  shared_preferences: ^2.2.0
-  hive: ^2.2.3
-  hive_flutter: ^1.1.0
+  # Armazenamento Local
+  shared_preferences: ^2.2.0  # Para armazenamento de configurações e dados simples
+  hive: ^2.2.3  # Banco de dados NoSQL local
+  hive_flutter: ^1.1.0  # Integração do Hive com Flutter
+  path_provider: ^2.0.10  # Para localização de diretórios no dispositivo
 
-  # permissões
-  permission_handler: ^12.0.0
+  # Permissões
+  permission_handler: ^12.0.0  # Para gerenciar permissões de acesso do usuário
 
-  # estado e API
-  provider: ^6.0.5
-  http: ^1.3.0
-  url_launcher: ^6.1.7
-  win32: ^5.12.0
+  # Estado e Comunicação com API
+  provider: ^6.0.5  # Para gerenciamento de estado
+  http: ^1.3.0  # Para fazer requisições HTTP
+  url_launcher: ^6.1.7  # Para abrir links externos no navegador
+  win32: ^5.12.0  # Para compatibilidade com Windows (caso necessário)
 
-  # internacionalização / formatação de data
-  intl: ^0.19.0               # encaixa com flutter_localizations :contentReference[oaicite:1]{index=1}
-  flutter_map: ^7.0.2
-  flutter_map_geojson: ^1.0.8
-  latlong2: any
-  # Firebase e notificações locais
-  firebase_core: ^3.13.0
-  firebase_messaging: ^15.2.5
-  flutter_local_notifications: ^19.1.0
+  # Internacionalização / Formatação de Data
+  intl: ^0.19.0  # Para suporte a internacionalização e formatação de datas
+  flutter_map: ^7.0.2  # Para integração de mapas no app
 
-  # ícones adicionais e utilitários
-  material_design_icons_flutter: ^7.0.7296
-  flutter_launcher_icons: ^0.14.3
-  uuid: any
+  flutter_map_marker_popup: ^7.0.0  # Para popups em marcadores do mapa
+  flutter_map_geojson: ^1.0.8  # Para integrar dados GeoJSON no mapa
+  latlong2: any  # Para trabalhar com coordenadas de latitude e longitude
 
-  # easy_localization e loader
-  easy_localization: ^3.0.1
-  easy_localization_loader: ^2.0.2  # null-safe, Dart >=2.12 :contentReference[oaicite:2]{index=2}
+  # Firebase e Notificações Locais
+  firebase_core: ^3.13.0  # Para integração do Firebase com o app
+  firebase_messaging: ^15.2.5  # Para gerenciar notificações push com Firebase
+  flutter_local_notifications: ^19.1.0  # Para notificações locais no app
+
+  # Ícones Adicionais e Utilitários
+  material_design_icons_flutter: ^7.0.7296  # Para ícones adicionais de Material Design
+  flutter_launcher_icons: ^0.14.3  # Para personalizar o ícone do aplicativo
+  uuid: any  # Para geração de identificadores únicos
+
+  # Easy Localization e Loader
+  easy_localization: ^3.0.1  # Para facilitar a tradução e internacionalização do app
+  easy_localization_loader: ^2.0.2  # Para carregar arquivos de tradução em tempo de execução
+
+  # Outros
+  image: any  # Para manipulação de imagens
+  http_parser: any  # Para análise de cabeçalhos HTTP
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^5.0.0
+  flutter_lints: ^5.0.0  # Para aplicar as boas práticas de linting
 
-  # geração de código para as chaves de tradução
-  build_runner: ^2.4.0
-  easy_localization_generator: ^0.3.3   # null-safe, Dart >=3.0 :contentReference[oaicite:3]{index=3}
+  # Geração de código para as chaves de tradução
+  build_runner: ^2.4.0  # Para gerar código de tradução
+  easy_localization_generator: ^0.3.3  # Para gerar as traduções de forma automática
 
 flutter:
   uses-material-design: true
 
-  # assets de JSON de tradução
+  # Assets de JSON de tradução
   assets:
     - assets/translations/
 
