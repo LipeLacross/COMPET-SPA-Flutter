@@ -11,8 +11,9 @@
     <uses-feature android:name="android.hardware.camera"
         android:required="true"/>
 
+    <!-- Definindo o tema padrão -->
     <application
-        android:label="Compet SPA"
+        android:label="GeoMap"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
@@ -31,6 +32,7 @@
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme"/>
 
+            <!-- Intent filter para a Activity principal -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -43,7 +45,7 @@
             android:value="2"/>
     </application>
 
-    <!-- Para permitir que plugins como ProcessTextPlugin funcionem -->
+    <!-- Permissões para permitir que plugins como ProcessTextPlugin funcionem -->
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>

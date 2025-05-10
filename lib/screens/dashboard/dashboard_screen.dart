@@ -17,9 +17,8 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
   final _storageService = LocalStorageService();
-  final _reportService  = ReportService();
+  final _reportService = ReportService();
 
   List<OfflineRecord> _allRecords = [];
   int _beneficiaryCount = 0;
@@ -27,18 +26,27 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this); // Alterado para 3 abas
     _reloadAll();
   }
 
   Future<void> _reloadAll() async {
-    final recs  = await _storageService.fetchQueue();
+    final recs = await _storageService.fetchQueue();
     final count = await _reportService.fetchBeneficiaryCount();
     if (!mounted) return;
     setState(() {
-      _allRecords      = recs;
+      _allRecords = recs;
       _beneficiaryCount = count;
     });
+  }
+
+  // Função que invoca a tela de MapView
+  void _navigateToMapView() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MapView(),  // Navega para o MapView
+      ),
+    );
   }
 
   @override
@@ -46,51 +54,35 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Resumo'),  // Resumo
-            Tab(text: 'SEMAS-PE'), // Dashboard SEMAS-PE
-            Tab(text: 'Mapa'),     // Novo Tab para o Mapa
-          ],
-        ),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _reloadAll),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _reloadAll,
+          ),
+          IconButton(
+            icon: const Icon(Icons.map),  // Ícone do mapa
+            onPressed: _navigateToMapView,  // Chama a função para abrir o mapa
+          ),
         ],
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          // Aba 1: Resumo com cartões e gráfico
-          RefreshIndicator(
-            onRefresh: _reloadAll,
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: SummaryCards(
-                    records: _allRecords,
-                    beneficiaryCount: _beneficiaryCount,
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: ActivityChart(records: _allRecords),
-                  ),
-                ),
-              ],
+      body: RefreshIndicator(
+        onRefresh: _reloadAll,
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: SummaryCards(
+                records: _allRecords,
+                beneficiaryCount: _beneficiaryCount,
+              ),
             ),
-          ),
-
-          // Aba 2: Dashboard SEMAS-PE (Power BI, GeoNode, etc)
-          const EmbeddedDashboard(
-            dashboardUrl: 'https://app.powerbi.com/view?r=seuRelatorioEmbed',
-            title: 'Painel SEMAS-PE',
-          ),
-
-          // Aba 3: Mapa - Visualização com pontos dos Beneficiários
-          const MapView(),  // A aba de Mapa que exibe os beneficiários no mapa
-        ],
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: ActivityChart(records: _allRecords),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

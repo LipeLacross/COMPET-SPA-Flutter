@@ -16,6 +16,7 @@ import 'package:competspa/services/notification_service.dart';
 import 'package:competspa/services/api_service.dart';
 import 'package:native_exif/native_exif.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
 
 class BeneficiaryScreen extends StatefulWidget {
   const BeneficiaryScreen({super.key});
@@ -25,7 +26,7 @@ class BeneficiaryScreen extends StatefulWidget {
 }
 
 class _BeneficiaryScreenState extends State<BeneficiaryScreen>
-    with SingleTickerProviderStateMixin {  // <- Aqui você adiciona o mixin
+    with SingleTickerProviderStateMixin {
   final SessionManager _sm = SessionManager();
   final GeolocationService _geo = GeolocationService();
   final LocalStorageService _store = LocalStorageService();
@@ -51,10 +52,12 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
   List<OfflineRecord> _records = [];
   List<Report> _payments = [];
 
+  List<File> _photos = [];
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);  // A inicialização agora funciona corretamente
+    _tabController = TabController(length: 3, vsync: this);
     _checkAccess();
   }
 
@@ -87,6 +90,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
       setState(() {});
     }
   }
+
   Future<void> _loadRecords() async {
     _records = await _store.fetchQueue();
     setState(() {});
@@ -101,6 +105,26 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
     }
   }
 
+  // Função para verificar se o usuário tem 3 fotos registradas
+  Future<void> _checkPhotos() async {
+    if (_photos.length < 3) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Atenção'),
+          content: const Text('Você precisa tirar 3 fotos semanais para registrar a atividade.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  // Função para salvar a área coberta
   Future<void> _saveArea() async {
     final total = double.tryParse(_areaTotalController.text);
     final app = double.tryParse(_areaAppController.text);
@@ -174,6 +198,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
     await _loadRecords();
   }
 
+  // Função para limpar os campos de área
   void _clearAreaInputs() {
     _areaTotalController.clear();
     _areaAppController.clear();
@@ -185,6 +210,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
     _otherResourcesController.clear();
   }
 
+  // Função para salvar a atividade
   Future<void> _saveActivity() async {
     if (_descController.text.trim().isEmpty) {
       return showDialog(
@@ -207,24 +233,25 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
 
     File imageFile = File(picked.path);
 
-    // Copiar a imagem para o diretório raiz
-    _copyImageToLocalDirectory(imageFile);
+    // Adicionar a foto à lista
+    _photos.add(imageFile);
 
-    // Usa o native_exif para escrever os metadados de GPS
+    // Verificar se há 3 fotos
+    await _checkPhotos();
+
+    // Lógica de EXIF (inclusão de dados de localização)
     try {
       final exif = await Exif.fromPath(imageFile.path);
       await exif.writeAttribute("GPSLatitude", _currentPos!.latitude.toString());
       await exif.writeAttribute("GPSLongitude", _currentPos!.longitude.toString());
-      await exif.writeAttribute(
-          "GPSLatitudeRef", _currentPos!.latitude >= 0 ? "N" : "S");
-      await exif.writeAttribute(
-          "GPSLongitudeRef", _currentPos!.longitude >= 0 ? "E" : "W");
+      await exif.writeAttribute("GPSLatitudeRef", _currentPos!.latitude >= 0 ? "N" : "S");
+      await exif.writeAttribute("GPSLongitudeRef", _currentPos!.longitude >= 0 ? "E" : "W");
       await exif.close();
     } catch (e) {
       print("Erro ao escrever dados EXIF: $e");
     }
 
-    // Cria o registro e salva as informações
+    // Criar o registro de atividade
     final rec = OfflineRecord(
       id: DateTime.now().toIso8601String(),
       beneficiaryId: await _sm.getBeneficiaryId() ?? 'unknown',
@@ -245,6 +272,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
 
     await _store.saveRecord(rec, XFile(rec.id));
 
+    // Tentando salvar a atividade via API ou offline
     try {
       await _api.postWithFile(
         path: 'activities',
@@ -268,20 +296,6 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
     _pickedImage = null;
     _currentPos = null;
     await _loadRecords();
-  }
-
-  // Função para copiar a imagem para o diretório local para PC
-  Future<void> _copyImageToLocalDirectory(File imageFile) async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final localPath = '${directory.path}/activity_images/';
-      await Directory(localPath).create(recursive: true); // Cria a pasta se não existir
-      final newFile = File('$localPath${imageFile.uri.pathSegments.last}');
-      await imageFile.copy(newFile.path);  // Copia a imagem
-      print('Imagem copiada para: ${newFile.path}');
-    } catch (e) {
-      print("Erro ao copiar imagem: $e");
-    }
   }
 
   @override
