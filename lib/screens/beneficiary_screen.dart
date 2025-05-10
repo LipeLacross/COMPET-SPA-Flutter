@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
-// Para XFile
 import 'package:competspa/components/custom_input.dart';
 import 'package:competspa/components/custom_button.dart';
 import 'package:competspa/services/geolocation_service.dart';
@@ -25,8 +24,7 @@ class BeneficiaryScreen extends StatefulWidget {
   State<BeneficiaryScreen> createState() => _BeneficiaryScreenState();
 }
 
-class _BeneficiaryScreenState extends State<BeneficiaryScreen>
-    with SingleTickerProviderStateMixin {
+class _BeneficiaryScreenState extends State<BeneficiaryScreen> with SingleTickerProviderStateMixin {
   final SessionManager _sm = SessionManager();
   final GeolocationService _geo = GeolocationService();
   final LocalStorageService _store = LocalStorageService();
@@ -53,6 +51,9 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
   List<Report> _payments = [];
 
   List<File> _photos = [];
+  String _photosMessage = '';  // Variável para armazenar a mensagem sobre fotos semanais
+  List<String> _areaOptions = []; // Lista para armazenar as áreas cobertas
+  String? _selectedArea; // Variável para armazenar a área selecionada
 
   @override
   void initState() {
@@ -65,27 +66,18 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
     final role = await _sm.getUserRole();
     if (role != 'beneficiary') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        showDialog<void>(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => AlertDialog(
+        showDialog<void>(context: context, barrierDismissible: false, builder: (_) {
+          return AlertDialog(
             title: const Text('Acesso Negado'),
-            content: const Text(
-              'Você não tem autorização para acessar esta área.\n'
-                  'Solicite permissão na tela de Administração.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
+            content: const Text('Você não tem autorização para acessar esta área.\nSolicite permissão na tela de Administração.'),
+            actions: [TextButton(onPressed: () => Navigator.pushReplacementNamed(context, '/home'), child: const Text('OK'))],
+          );
+        });
       });
     } else {
       await _loadRecords();
       await _loadPayments();
+      await _loadAreas(); // Carregar áreas cobertas
       _notif.init();
       setState(() {});
     }
@@ -105,22 +97,24 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
     }
   }
 
+  Future<void> _loadAreas() async {
+    // Carregar áreas cobertas para a lista suspensa (seleção de área)
+    final areas = await _store.fetchAreas();  // Agora a função retorna uma lista de Strings
+    setState(() {
+      _areaOptions = areas;  // Atribui a lista de áreas à variável _areaOptions
+    });
+  }
+
   // Função para verificar se o usuário tem 3 fotos registradas
   Future<void> _checkPhotos() async {
     if (_photos.length < 3) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Atenção'),
-          content: const Text('Você precisa tirar 3 fotos semanais para registrar a atividade.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
+      setState(() {
+        _photosMessage = 'Você precisa tirar 3 fotos semanais para registrar a atividade.';
+      });
+    } else {
+      setState(() {
+        _photosMessage = ''; // Limpar mensagem quando houver 3 fotos
+      });
     }
   }
 
@@ -135,22 +129,14 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
         context: context,
         builder: (_) => AlertDialog(
           title: const Text('Dados Inválidos'),
-          content: const Text(
-            'Preencha corretamente:\n'
-                '- Área Total e Área APP com números válidos\n'
-                '- Recursos Humanos com número inteiro',
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-          ],
+          content: const Text('Preencha corretamente:\n- Área Total e Área APP com números válidos\n- Recursos Humanos com número inteiro'),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
         ),
       );
     }
 
     if (_addressController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Endereço é obrigatório!')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Endereço é obrigatório!')));
       return;
     }
 
@@ -213,16 +199,8 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
   // Função para salvar a atividade
   Future<void> _saveActivity() async {
     if (_descController.text.trim().isEmpty) {
-      return showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Atenção'),
-          content: const Text('Descrição é obrigatória!'),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-          ],
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Descrição é obrigatória!')));
+      return;
     }
 
     final picked = await ImagePicker().pickImage(source: ImageSource.camera);
@@ -233,23 +211,29 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
 
     File imageFile = File(picked.path);
 
+    // Salvar a foto na raiz do projeto
+    final directory = await getApplicationDocumentsDirectory();
+    final localPath = '${directory.path}/activity_images/';
+    await Directory(localPath).create(recursive: true); // Cria a pasta se não existir
+    final newFile = File('$localPath${DateTime.now().millisecondsSinceEpoch}.jpg');
+    await imageFile.copy(newFile.path);
+
+    // Verificar os metadados EXIF da foto
+    try {
+      final exif = await Exif.fromPath(newFile.path);
+      final gpsLatitude = await exif.getAttribute("GPSLatitude");
+      final gpsLongitude = await exif.getAttribute("GPSLongitude");
+      print("GPS Latitude: $gpsLatitude, GPS Longitude: $gpsLongitude");
+      await exif.close();
+    } catch (e) {
+      print("Erro ao ler dados EXIF: $e");
+    }
+
     // Adicionar a foto à lista
     _photos.add(imageFile);
 
     // Verificar se há 3 fotos
     await _checkPhotos();
-
-    // Lógica de EXIF (inclusão de dados de localização)
-    try {
-      final exif = await Exif.fromPath(imageFile.path);
-      await exif.writeAttribute("GPSLatitude", _currentPos!.latitude.toString());
-      await exif.writeAttribute("GPSLongitude", _currentPos!.longitude.toString());
-      await exif.writeAttribute("GPSLatitudeRef", _currentPos!.latitude >= 0 ? "N" : "S");
-      await exif.writeAttribute("GPSLongitudeRef", _currentPos!.longitude >= 0 ? "E" : "W");
-      await exif.close();
-    } catch (e) {
-      print("Erro ao escrever dados EXIF: $e");
-    }
 
     // Criar o registro de atividade
     final rec = OfflineRecord(
@@ -265,7 +249,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
       payload: {
         'type': 'activity',
         'description': _descController.text,
-        'imagePath': imageFile.path,
+        'imagePath': newFile.path,
         'date': DateHelper.formatDate(DateTime.now()),
       },
     );
@@ -282,7 +266,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
           'status': rec.status,
           'beneficiaryId': rec.beneficiaryId,
         },
-        file: imageFile,
+        file: newFile,
         latitude: rec.latitude,
         longitude: rec.longitude,
       );
@@ -343,6 +327,11 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen>
                 const SizedBox(height: 12),
                 CustomButton(label: 'Tirar Foto e Registrar', onPressed: _saveActivity),
                 const SizedBox(height: 20),
+                if (_photosMessage.isNotEmpty)
+                  Text(
+                    _photosMessage,
+                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
                 Expanded(
                   child: ListView(
                     children: _records

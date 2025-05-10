@@ -1,5 +1,3 @@
-// lib/services/local_storage_service.dart
-
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -9,6 +7,7 @@ import '../models/offline_record.dart';
 
 class LocalStorageService {
   static const _queueKey = 'offline_queue';
+  static const _areasKey = 'areas_key'; // Nova chave para armazenar as áreas cobertas
 
   /// Salva um novo registro na fila offline, incluindo a foto.
   Future<void> saveRecord(OfflineRecord rec, XFile imageFile) async {
@@ -76,5 +75,28 @@ class LocalStorageService {
       }
     }
     await prefs.remove(_queueKey);  // Limpa a fila de registros offline
+  }
+
+  /// Salva uma nova área coberta (similar ao processo de salvar um registro offline).
+  Future<void> saveArea(String areaName) async {
+    final prefs = await SharedPreferences.getInstance();
+    final areasList = prefs.getStringList(_areasKey) ?? [];
+    areasList.add(areaName);  // Adiciona o nome da área
+    await prefs.setStringList(_areasKey, areasList);  // Salva a lista de áreas
+  }
+
+  /// Retorna todas as áreas cobertas salvas.
+  Future<List<String>> fetchAreas() async {
+    final prefs = await SharedPreferences.getInstance();
+    final areasList = prefs.getStringList(_areasKey) ?? [];
+    return areasList;  // Retorna a lista de áreas
+  }
+
+  /// Remove uma área coberta específica.
+  Future<void> deleteArea(String areaName) async {
+    final prefs = await SharedPreferences.getInstance();
+    final areasList = prefs.getStringList(_areasKey) ?? [];
+    areasList.remove(areaName);  // Remove a área da lista
+    await prefs.setStringList(_areasKey, areasList);  // Atualiza a lista de áreas
   }
 }
