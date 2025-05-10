@@ -42,7 +42,6 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen> with SingleTicker
   final _animalsController = TextEditingController();
   final _humanResourcesController = TextEditingController();
   final _otherResourcesController = TextEditingController();
-
   final _descController = TextEditingController();
 
   File? _pickedImage;
@@ -54,6 +53,8 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen> with SingleTicker
   String _photosMessage = '';  // Variável para armazenar a mensagem sobre fotos semanais
   List<String> _areaOptions = []; // Lista para armazenar as áreas cobertas
   String? _selectedArea; // Variável para armazenar a área selecionada
+  int _photoCount = 0;
+  int _videoCount = 0;
 
   @override
   void initState() {
@@ -105,15 +106,19 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen> with SingleTicker
     });
   }
 
-  // Função para verificar se o usuário tem 3 fotos registradas
-  Future<void> _checkPhotos() async {
-    if (_photos.length < 3) {
+  // Função para verificar se o usuário tem 10 fotos e 3 vídeos registrados
+  Future<void> _checkMedia() async {
+    if (_photoCount < 10) {
       setState(() {
-        _photosMessage = 'Você precisa tirar 3 fotos semanais para registrar a atividade.';
+        _photosMessage = 'Você precisa tirar no mínimo 10 fotos e 3 vídeos de 1 minuto cada semana para cada território.';
+      });
+    } else if (_videoCount < 3) {
+      setState(() {
+        _photosMessage = 'Você precisa enviar 3 vídeos de no mínimo 1 minuto cada semana para cada território.';
       });
     } else {
       setState(() {
-        _photosMessage = ''; // Limpar mensagem quando houver 3 fotos
+        _photosMessage = ''; // Limpar mensagem quando as exigências forem cumpridas
       });
     }
   }
@@ -163,6 +168,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen> with SingleTicker
         'humanResources': hr,
         'otherResources': _otherResourcesController.text,
         'date': DateHelper.formatDate(DateTime.now()),
+        'territory': _selectedArea, // Adiciona a área selecionada
       },
     );
 
@@ -194,46 +200,40 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen> with SingleTicker
     _animalsController.clear();
     _humanResourcesController.clear();
     _otherResourcesController.clear();
+    _selectedArea = null; // Limpar a seleção da área
   }
 
   // Função para salvar a atividade
-  Future<void> _saveActivity() async {
+  Future<void> _saveActivity(String mediaType) async {
     if (_descController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Descrição é obrigatória!')));
       return;
     }
 
-    final picked = await ImagePicker().pickImage(source: ImageSource.camera);
-    if (picked == null) return;
+    File? mediaFile;
+    if (mediaType == 'photo') {
+      final picked = await ImagePicker().pickImage(source: ImageSource.camera);
+      if (picked == null) return;
+      mediaFile = File(picked.path);
+      _photoCount++;  // Incrementa o contador de fotos
+    } else if (mediaType == 'video') {
+      final picked = await ImagePicker().pickVideo(source: ImageSource.camera);
+      if (picked == null) return;
+      mediaFile = File(picked.path);
+      _videoCount++;  // Incrementa o contador de vídeos
+    }
+
+    if (mediaFile == null) return;
 
     _currentPos = await _geo.getUserLocation();
     if (_currentPos == null) return;
 
-    File imageFile = File(picked.path);
-
-    // Salvar a foto na raiz do projeto
+    // Salvar o arquivo na raiz do projeto
     final directory = await getApplicationDocumentsDirectory();
-    final localPath = '${directory.path}/activity_images/';
-    await Directory(localPath).create(recursive: true); // Cria a pasta se não existir
-    final newFile = File('$localPath${DateTime.now().millisecondsSinceEpoch}.jpg');
-    await imageFile.copy(newFile.path);
-
-    // Verificar os metadados EXIF da foto
-    try {
-      final exif = await Exif.fromPath(newFile.path);
-      final gpsLatitude = await exif.getAttribute("GPSLatitude");
-      final gpsLongitude = await exif.getAttribute("GPSLongitude");
-      print("GPS Latitude: $gpsLatitude, GPS Longitude: $gpsLongitude");
-      await exif.close();
-    } catch (e) {
-      print("Erro ao ler dados EXIF: $e");
-    }
-
-    // Adicionar a foto à lista
-    _photos.add(imageFile);
-
-    // Verificar se há 3 fotos
-    await _checkPhotos();
+    final localPath = '${directory.path}/activity_media/';
+    await Directory(localPath).create(recursive: true);
+    final newFile = File('$localPath${DateTime.now().millisecondsSinceEpoch}.jpg');  // Usar .mp4 para vídeos
+    await mediaFile.copy(newFile.path);
 
     // Criar o registro de atividade
     final rec = OfflineRecord(
@@ -249,7 +249,8 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen> with SingleTicker
       payload: {
         'type': 'activity',
         'description': _descController.text,
-        'imagePath': newFile.path,
+        'mediaPath': newFile.path,
+        'mediaType': mediaType,  // Foto ou vídeo
         'date': DateHelper.formatDate(DateTime.now()),
       },
     );
@@ -315,6 +316,21 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen> with SingleTicker
                 CustomInput(label: 'Animais', controller: _animalsController),
                 CustomInput(label: 'Recursos Humanos', controller: _humanResourcesController),
                 CustomInput(label: 'Outros Recursos', controller: _otherResourcesController),
+                DropdownButton<String>(
+                  value: _selectedArea,
+                  hint: const Text('Selecione a área'),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedArea = newValue;
+                    });
+                  },
+                  items: _areaOptions.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
                 CustomButton(label: 'Salvar Área', onPressed: _saveArea),
               ],
             ),
@@ -325,7 +341,9 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen> with SingleTicker
               children: [
                 CustomInput(label: 'Descrição da Atividade *', controller: _descController),
                 const SizedBox(height: 12),
-                CustomButton(label: 'Tirar Foto e Registrar', onPressed: _saveActivity),
+                CustomButton(label: 'Tirar Foto', onPressed: () => _saveActivity('photo')),
+                const SizedBox(height: 12),
+                CustomButton(label: 'Gravar Vídeo', onPressed: () => _saveActivity('video')),
                 const SizedBox(height: 20),
                 if (_photosMessage.isNotEmpty)
                   Text(
@@ -339,7 +357,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen> with SingleTicker
                         .map((r) => Card(
                       margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
-                        leading: Image.file(File(r.payload['imagePath']), width: 50, fit: BoxFit.cover),
+                        leading: Image.file(File(r.payload['mediaPath']), width: 50, fit: BoxFit.cover),
                         title: Text(r.payload['description']),
                         subtitle: Text('Em ${r.payload['date']}'),
                         trailing: const Icon(Icons.location_on, color: Colors.green),

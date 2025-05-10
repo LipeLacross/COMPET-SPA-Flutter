@@ -229,6 +229,19 @@ class _AdminScreenState extends State<AdminScreen>
                   },
                 ),
               ),
+              // Test link for demonstration
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () async {
+                  const url = 'https://www.example.com';  // Replace with your test link
+                  if (await canLaunch(url)) {
+                    await launch(url);  // Launch the URL
+                  } else {
+                    throw 'Could not open the link';
+                  }
+                },
+                child: const Text('Clique aqui para acessar o link de teste', style: TextStyle(color: Colors.blue)),
+              ),
             ],
           ),
         ],

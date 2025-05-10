@@ -81,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Serviços de Pagamentos Ambientais COMPET',
+              'GeoMap - Serviços de Pagamentos Ambientais',
               textAlign: TextAlign.center,
               style: Theme.of(context)
                   .textTheme
