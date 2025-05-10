@@ -10,7 +10,6 @@ import 'screens/signup_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
-import 'screens/activities_screen.dart';
 import 'screens/beneficiary_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/admin_screen.dart';
@@ -56,7 +55,6 @@ class _MyAppState extends State<MyApp> {
         '/forgot_password': (_) => const ForgotPasswordScreen(),
         '/home':            (_) => const HomeScreen(),
         '/dashboard':       (_) => const DashboardScreen(),
-        '/activities':      (_) => const ActivitiesScreen(),
         '/beneficiary':     (_) => const BeneficiaryScreen(),
         // Aqui: ProfileScreen recebe a função para mudar tema
         '/profile':         (_) => ProfileScreen(onThemeChanged: _updateTheme),
