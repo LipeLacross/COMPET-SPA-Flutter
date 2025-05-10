@@ -1,10 +1,10 @@
-// lib/screens/admin_screen.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:csv/csv.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:url_launcher/url_launcher.dart'; // Import para abrir o URL
 import '../services/api_service.dart';
 import '../services/session_manager.dart';
 import '../models/report.dart';
@@ -195,6 +195,16 @@ class _AdminScreenState extends State<AdminScreen>
     Navigator.pushReplacementNamed(context, '/login');
   }
 
+  // Função para abrir o edital
+  Future<void> _openEdital() async {
+    const url = 'https://desafios.pe.gov.br/portal/home/getchallengedocument/164'; // URL do edital
+    if (await canLaunch(url)) {
+      await launch(url); // Abre o link
+    } else {
+      throw 'Não foi possível abrir o link';
+    }
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -238,7 +248,7 @@ class _AdminScreenState extends State<AdminScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          // === Usuários com filtro e edição ===
+          // === Usuários ===
           Column(
             children: [
               Padding(
@@ -304,7 +314,7 @@ class _AdminScreenState extends State<AdminScreen>
             ],
           ),
 
-          // === Pagamentos com exportação ===
+          // === Pagamentos ===
           Column(
             children: [
               Padding(
@@ -329,22 +339,16 @@ class _AdminScreenState extends State<AdminScreen>
                   ),
                 ),
               ),
-              Expanded(
-                child: _loadingReports
-                    ? const Center(child: CircularProgressIndicator())
-                    : ListView.builder(
-                  itemCount: _reports.length,
-                  itemBuilder: (_, i) {
-                    final r = _reports[i];
-                    return ListTile(
-                      leading: const Icon(Icons.payment),
-                      title: Text(r.title),
-                      subtitle: Text(
-                        '${DateHelper.formatDate(r.date)}\n${r.url}',
-                      ),
-                      isThreeLine: true,
-                    );
-                  },
+              // === Botão para acessar o Edital ===
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.picture_as_pdf),
+                    label: const Text('Acessar Edital SEMAS-PE'),
+                    onPressed: _openEdital, // Abre o edital
+                  ),
                 ),
               ),
             ],

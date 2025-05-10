@@ -1,5 +1,4 @@
 // lib/screens/beneficiary_detail_screen.dart
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -7,15 +6,14 @@ import 'package:latlong2/latlong.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import '../models/offline_record.dart';
-import '../services/local_storage_service.dart';
-import '../utils/date_helper.dart';
+import '../../models/offline_record.dart';
+import '../../services/local_storage_service.dart';
 
 /// Tela de detalhes de registro de área e atividades do beneficiário,
 /// com mini-mapa, fotos, e exportação/compartilhamento.
 class BeneficiaryDetailScreen extends StatefulWidget {
   final OfflineRecord record;
-  const BeneficiaryDetailScreen({Key? key, required this.record}) : super(key: key);
+  const BeneficiaryDetailScreen({super.key, required this.record});
 
   @override
   State<BeneficiaryDetailScreen> createState() => _BeneficiaryDetailScreenState();

@@ -12,10 +12,10 @@ class SummaryCards extends StatelessWidget {
   final int beneficiaryCount; // Adicionando parâmetro de contagem de beneficiários
 
   const SummaryCards({
-    Key? key,
+    super.key,
     required this.records,
     required this.beneficiaryCount, // Passando este parâmetro
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

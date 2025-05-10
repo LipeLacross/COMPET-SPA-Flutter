@@ -1,4 +1,3 @@
-// lib/services/session_manager.dart
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SessionManager {
@@ -11,6 +10,10 @@ class SessionManager {
   static const _fullNameKey = 'user_full_name';  // Nome completo
   static const _biographyKey = 'user_biography';  // Biografia
   static const _themeKey = 'user_theme';  // Tema (escuro/claro)
+
+  // New keys for beneficiary data
+  static const _beneficiaryIdKey = 'beneficiary_id';
+  static const _beneficiaryNameKey = 'beneficiary_name';
 
   /// Salva a preferência de tema
   Future<void> saveTheme(bool isDarkMode) async {
@@ -120,6 +123,31 @@ class SessionManager {
     return prefs.getString(_biographyKey);
   }
 
+  // New methods to save and retrieve beneficiary data:
+  /// Salva o ID do beneficiário
+  Future<void> saveBeneficiaryId(String beneficiaryId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_beneficiaryIdKey, beneficiaryId);
+  }
+
+  /// Recupera o ID do beneficiário
+  Future<String?> getBeneficiaryId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_beneficiaryIdKey);
+  }
+
+  /// Salva o nome do beneficiário
+  Future<void> saveBeneficiaryName(String beneficiaryName) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_beneficiaryNameKey, beneficiaryName);
+  }
+
+  /// Recupera o nome do beneficiário
+  Future<String?> getBeneficiaryName() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_beneficiaryNameKey);
+  }
+
   /// Limpa todas as informações de sessão (logout)
   Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
@@ -132,5 +160,7 @@ class SessionManager {
     await prefs.remove(_fullNameKey);
     await prefs.remove(_biographyKey);
     await prefs.remove(_themeKey);
+    await prefs.remove(_beneficiaryIdKey);  // Removed beneficiaryId during logout
+    await prefs.remove(_beneficiaryNameKey);  // Removed beneficiaryName during logout
   }
 }

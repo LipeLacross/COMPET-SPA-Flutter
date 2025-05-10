@@ -1,10 +1,10 @@
 // lib/screens/beneficiary_edit_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../components/custom_input.dart';
-import '../components/custom_button.dart';
-import '../services/api_service.dart';
-import '../models/beneficiary.dart';
+import '../../components/custom_input.dart';
+import '../../components/custom_button.dart';
+import '../../services/api_service.dart';
+import '../../models/beneficiary.dart';
 
 class BeneficiaryEditScreen extends StatefulWidget {
   final Beneficiary ben;

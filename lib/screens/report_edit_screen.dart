@@ -52,7 +52,7 @@ class _ReportEditScreenState extends State<ReportEditScreen> {
     // Verifica se é para criar ou atualizar o relatório
     if (widget.report == null) {
       // Quando não existe um relatório, criamos um novo
-      await _service.createReport(rep.toMap());
+      await _service.createReport(rep.toMap());  // Passando o Map para o método createReport
     } else {
       // Quando existe um relatório, atualizamos o existente
       await _service.updateReport(rep.id, rep.toMap());

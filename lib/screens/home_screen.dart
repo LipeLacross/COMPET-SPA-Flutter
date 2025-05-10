@@ -1,11 +1,19 @@
-// lib/screens/home_screen.dart
-
 import 'package:flutter/material.dart';
 import '../components/whatsapp_button.dart';
 import '../services/session_manager.dart';
+import 'package:url_launcher/url_launcher.dart'; // Para abrir a URL do edital
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  Future<void> _openEdital() async {
+    const url = 'https://desafios.pe.gov.br/portal/home/getchallengedocument/164';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Não foi possível abrir o link';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +96,18 @@ class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               onPressed: () => Navigator.pushNamed(context, '/dashboard'),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Botão para abrir o edital SEMAS-PE
+            ElevatedButton.icon(
+              icon: const Icon(Icons.picture_as_pdf),
+              label: const Text('Acessar Edital SEMAS-PE'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              onPressed: _openEdital, // Chama a função que abre o edital
             ),
 
             const Spacer(),

@@ -1,8 +1,8 @@
-//dashboard_screen.dart
+//activities_screen.dart
 import 'package:flutter/material.dart';
-import '../models/activity.dart';
-import '../components/custom_input.dart';
-import '../components/custom_button.dart';
+import '../../models/activity.dart';
+import '../../components/custom_input.dart';
+import '../../components/custom_button.dart';
 
 class ActivitiesScreen extends StatefulWidget {
   const ActivitiesScreen({super.key});
