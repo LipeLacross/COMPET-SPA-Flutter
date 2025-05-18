@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'embedded_dashboard.dart';
 import 'summary_cards.dart';
 import 'activity_chart.dart';
 import '../../models/offline_record.dart';
 import '../../services/local_storage_service.dart';
 import '../../services/report_service.dart';
-import 'dart:io';
 import 'map_view.dart'; // Importando a tela de mapa
 
 class DashboardScreen extends StatefulWidget {

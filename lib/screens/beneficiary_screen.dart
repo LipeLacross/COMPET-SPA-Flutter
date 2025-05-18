@@ -13,9 +13,7 @@ import 'package:competspa/utils/date_helper.dart';
 import 'package:competspa/services/session_manager.dart';
 import 'package:competspa/services/notification_service.dart';
 import 'package:competspa/services/api_service.dart';
-import 'package:native_exif/native_exif.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter/services.dart';
 
 class BeneficiaryScreen extends StatefulWidget {
   const BeneficiaryScreen({super.key});
@@ -49,7 +47,7 @@ class _BeneficiaryScreenState extends State<BeneficiaryScreen> with SingleTicker
   List<OfflineRecord> _records = [];
   List<Report> _payments = [];
 
-  List<File> _photos = [];
+  final List<File> _photos = [];
   String _photosMessage = '';  // Variável para armazenar a mensagem sobre fotos semanais
   List<String> _areaOptions = []; // Lista para armazenar as áreas cobertas
   String? _selectedArea; // Variável para armazenar a área selecionada

@@ -17,7 +17,19 @@
 
 ### Exemplo Visual do Projeto
 
-![Exemplo Visual](caminho/para/imagem.jpg)
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+  <img src="https://github.com/user-attachments/assets/fea2d5cc-fc22-44c8-b6dc-c5e00cc0b77e" style="width: 30%; margin-bottom: 10px;">
+  <img src="https://github.com/user-attachments/assets/5c7938a9-ef30-4d6d-a23b-d6444df922ad" style="width: 30%; margin-bottom: 10px;">
+  <img src="https://github.com/user-attachments/assets/737f4c6d-ba1e-4901-a84f-90476bd5df8f" style="width: 30%; margin-bottom: 10px;">
+  <img src="https://github.com/user-attachments/assets/16409d2f-00fa-4243-9dfd-befcf9346556" style="width: 30%; margin-bottom: 10px;">
+  <img src="https://github.com/user-attachments/assets/bbdbf443-6f87-462f-bd6d-c3c9853011dc" style="width: 30%; margin-bottom: 10px;">
+  <img src="https://github.com/user-attachments/assets/77eb7cda-c25e-4e10-89cc-b01879664990" style="width: 30%; margin-bottom: 10px;">
+  <img src="https://github.com/user-attachments/assets/bfd20482-e66f-4c4e-a3e0-6188b7540eee" style="width: 30%; margin-bottom: 10px;">
+  <img src="https://github.com/user-attachments/assets/6c465a6e-9147-4688-b9a4-1480d0cc35ce" style="width: 30%; margin-bottom: 10px;">
+  <img src="https://github.com/user-attachments/assets/f476f515-9eb7-4a1a-81e1-61753094e2b9" style="width: 30%; margin-bottom: 10px;">
+  <img src="https://github.com/user-attachments/assets/5caba9f1-6b82-450e-bcb9-5fb849d3cc5b" style="width: 30%; margin-bottom: 10px;">
+</div>
+
 
 ## ✔️ **Técnicas e Tecnologias Utilizadas**
 
